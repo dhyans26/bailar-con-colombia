@@ -10,7 +10,7 @@ backend/model/lstm_move_classifier.pt, containing the model weights,
 label list, feature normalization stats, and architecture config needed
 to reload the model for inference later.
 """
-
+    
 import argparse
 import json
 from pathlib import Path
