@@ -15,7 +15,7 @@ import config
 from pose_utils import draw_skeleton, extract_keypoints, infer, load_model, open_camera
 
 DATASET_DIR = Path(__file__).resolve().parent / "dataset"
-WINDOW_NAME = "Salsa Buddy - dataset recorder"
+WINDOW_NAME = "Dataset recorder"
 BUTTON_RECT = (10, 55, 170, 45)  # x, y, w, h
 LABEL_CHAR_RE = re.compile(r"[A-Za-z0-9_-]")
 

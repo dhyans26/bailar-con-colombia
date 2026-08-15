@@ -102,7 +102,7 @@ def main():
 
         cv2.putText(frame, status, (10, frame.shape[0] - 10),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-        cv2.imshow("Salsa Buddy - LSTM model test", frame)
+        cv2.imshow("LSTM model test", frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 

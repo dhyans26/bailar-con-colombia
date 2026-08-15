@@ -1,5 +1,3 @@
-"""Tunable constants for Salsa Buddy."""
-
 CAMERA_INDEX = 0
 FRAME_SCALE = 0.5
 KPT_CONF_THRES = 0.3
