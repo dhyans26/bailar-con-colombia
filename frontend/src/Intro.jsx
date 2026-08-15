@@ -36,6 +36,8 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
   const indexRef = useRef(TITLE_INDEX)
   const showTextRef = useRef(true)
   const showNamePromptRef = useRef(false)
+  // Undocumented: M toggles the music. Deliberately absent from the hints.
+  const mutedRef = useRef(false)
   const doneRef = useRef(false)
   const busyRef = useRef(false)
 
@@ -56,6 +58,7 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
     const audio = new Audio(INTRO_MUSIC)
     audio.loop = true
     audio.volume = INTRO_MUSIC_VOLUME
+    audio.muted = mutedRef.current
     musicRef.current = audio
 
     // Autoplay before the player has touched the page is usually refused, so
@@ -111,6 +114,13 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
       ease: 'power1.in',
       onComplete: () => audio.pause(),
     })
+  }, [])
+
+  // Mute rather than pause: the track keeps its place, and the fade-outs in
+  // stopMusic still run against volume without fighting this.
+  const toggleMute = useCallback(() => {
+    mutedRef.current = !mutedRef.current
+    if (musicRef.current) musicRef.current.muted = mutedRef.current
   }, [])
 
   const finish = useCallback(() => {
@@ -244,7 +254,11 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
         }
         return
       }
-      if (e.code === 'Space' || e.key === ' ') {
+      // Modifiers excluded so this never steals Cmd+M and friends.
+      if ((e.key === 'm' || e.key === 'M') && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault()
+        toggleMute()
+      } else if (e.code === 'Space' || e.key === ' ') {
         e.preventDefault()
         advance()
       } else if (e.key === 'Escape') {
@@ -254,7 +268,7 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [advance, finish, submitName])
+  }, [advance, finish, submitName, toggleMute])
 
   const beat = index >= 0 ? BEATS[index] : null
   const onTitle = index === TITLE_INDEX
