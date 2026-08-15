@@ -6,6 +6,19 @@ const ROUNDS_PER_GAME = 5
 const READY_MS = 2000
 const PERFORM_MS = 4000
 
+// One entry per track in public/game-music -- each game starts with a random
+// pick, so dropping a new song in the folder means adding it to this list too.
+const GAME_MUSIC_TRACKS = [
+  encodeURI('/game-music/La Vida Es Un Carnaval - Celia Cruz [0nBFWzpWXuM].opus'),
+  encodeURI('/game-music/markanthony.mp3'),
+]
+
+const GAME_MUSIC_VOLUME = 0.55
+
+function pickTrack() {
+  return GAME_MUSIC_TRACKS[Math.floor(Math.random() * GAME_MUSIC_TRACKS.length)]
+}
+
 // "idle" is the model's do-nothing/rest class, not a move to call out and
 // score against -- every other trained label is fair game. New labels
 // recorded via dataset_recorder.py + train_lstm.py show up automatically.
@@ -86,7 +99,7 @@ function DanceCallout({ phase, round, target, poseDetected, liveScore, maxScore 
   )
 }
 
-function SalsaGame({ pose, prediction, health, playerName }) {
+function SalsaGame({ pose, prediction, health, playerName, onGameActiveChange }) {
   const [phase, setPhase] = useState('lobby') // lobby | ready | perform | finished
   const [round, setRound] = useState(0)
   const [target, setTarget] = useState(null)
@@ -95,6 +108,15 @@ function SalsaGame({ pose, prediction, health, playerName }) {
   const [liveProb, setLiveProb] = useState(0) // best confidence seen this round, mirrored for live rendering
   const maxProbRef = useRef(0)
   const submittedRef = useRef(false)
+  const musicRef = useRef(null)
+  const prevPhaseRef = useRef(phase)
+  const trackRef = useRef(null)
+  const lastTrackRef = useRef(null)
+  // Mirrors the mute pattern in Intro.jsx -- this file never had a mutedRef
+  // of its own even though the game-music effect below reads one, which
+  // threw a ReferenceError the instant a round started. No mute control is
+  // wired up on this screen yet, so it just defaults to unmuted.
+  const mutedRef = useRef(false)
 
   const moves = playableMoves(health && health.labels)
 
@@ -104,6 +126,7 @@ function SalsaGame({ pose, prediction, health, playerName }) {
     submittedRef.current = false
     setRound(0)
     setTarget(pickTarget(moves, null))
+    trackRef.current = pickTrack()
     setPhase('ready')
   }
 
@@ -113,6 +136,45 @@ function SalsaGame({ pose, prediction, health, playerName }) {
     const id = setTimeout(() => setPhase('perform'), READY_MS)
     return () => clearTimeout(id)
   }, [phase])
+
+  // Game music from public/game-music: it only plays while a round is live
+  // (ready/perform), starts a fresh random track each time a game begins, and
+  // never plays on the lobby, the finished screen, or any other view. The
+  // ambient track in App stands down while this is going.
+  useEffect(() => {
+    const audio = new Audio()
+    audio.loop = true
+    audio.volume = GAME_MUSIC_VOLUME
+    audio.muted = mutedRef.current
+    musicRef.current = audio
+    return () => {
+      audio.pause()
+      audio.src = ''
+      musicRef.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    const audio = musicRef.current
+    if (!audio) return
+    const inPlay = phase === 'ready' || phase === 'perform'
+    const wasInPlay = prevPhaseRef.current === 'ready' || prevPhaseRef.current === 'perform'
+    prevPhaseRef.current = phase
+    onGameActiveChange(inPlay)
+    if (inPlay) {
+      if (!wasInPlay && trackRef.current) {
+        if (lastTrackRef.current !== trackRef.current) {
+          lastTrackRef.current = trackRef.current
+          audio.src = trackRef.current
+          audio.load()
+        }
+        audio.currentTime = 0
+      }
+      audio.play().catch(() => {})
+    } else {
+      audio.pause()
+    }
+  }, [phase, onGameActiveChange])
 
   // perform window: reset the tracker, then score whatever was captured
   useEffect(() => {
