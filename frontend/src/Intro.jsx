@@ -11,7 +11,7 @@ import { BEATS, CLIMB_AUDIO, DEFAULT_HINT, TITLE } from './story.js'
 
 const TITLE_INDEX = -1
 
-function Intro({ playerName, onPlayerNameChange, onComplete }) {
+function Intro({ playerName, onPlayerNameChange, onComplete, muted = false }) {
   // -1 is the title card, 0..n-1 index into BEATS.
   const [index, setIndex] = useState(TITLE_INDEX)
   // Text only appears once the clip for this beat has finished.
@@ -28,8 +28,7 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
   const indexRef = useRef(TITLE_INDEX)
   const showTextRef = useRef(true)
   const showNamePromptRef = useRef(false)
-  // Undocumented: M toggles the music. Deliberately absent from the hints.
-  const mutedRef = useRef(false)
+  const mutedRef = useRef(muted)
   const doneRef = useRef(false)
   const busyRef = useRef(false)
 
@@ -60,13 +59,17 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
     )
   }, [index, showText, reduced])
 
-  // Mute is currently a no-op stub: the ambient track this used to control
-  // now lives in App (see the comment in finish() below), and App doesn't
-  // yet expose a way for Intro to reach it. Kept so the 'M' hotkey and the
-  // hint text stay intact for whenever that wiring lands.
-  const toggleMute = useCallback(() => {
-    mutedRef.current = !mutedRef.current
-  }, [])
+  // The ambient track lives in App now, and so does the M hotkey that mutes
+  // it -- App owns every track, so it is the only place that can silence all
+  // of them at once. All that is left here is the climb clips' own audio,
+  // which follows the same flag down as a prop. The ref mirror keeps playBeat
+  // stable while still seeing the current value.
+  useEffect(() => {
+    mutedRef.current = muted
+    videoRefs.current.forEach((v) => {
+      if (v) v.muted = !CLIMB_AUDIO || muted
+    })
+  }, [muted])
 
   const finish = useCallback(() => {
     if (doneRef.current) return
@@ -109,7 +112,7 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
       }
 
       video.currentTime = 0
-      video.muted = !CLIMB_AUDIO
+      video.muted = !CLIMB_AUDIO || mutedRef.current
       video.play().catch(() => {
         // Autoplay with sound refused — retry silently instead of stalling.
         video.muted = true
@@ -198,11 +201,7 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
         }
         return
       }
-      // Modifiers excluded so this never steals Cmd+M and friends.
-      if ((e.key === 'm' || e.key === 'M') && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        e.preventDefault()
-        toggleMute()
-      } else if (e.code === 'Space' || e.key === ' ') {
+      if (e.code === 'Space' || e.key === ' ') {
         e.preventDefault()
         advance()
       } else if (e.key === 'Escape') {
@@ -212,7 +211,7 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [advance, finish, submitName, toggleMute])
+  }, [advance, finish, submitName])
 
   const beat = index >= 0 ? BEATS[index] : null
   const onTitle = index === TITLE_INDEX
