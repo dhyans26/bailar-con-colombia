@@ -243,7 +243,7 @@ function App() {
       {stage === 'game' && (
         <>
           <div className="stage" ref={stageRef}>
-            <div className="stage__panel">
+            <div className={`stage__panel${gameActive ? ' stage__panel--playing' : ''}`}>
               {error && <p>cannot reach backend at {API_BASE}: {error}</p>}
 
               {view === 'game' && (
