@@ -75,6 +75,8 @@ const HIP_NAMES = ['left_hip', 'right_hip']
 const SHOULDER_NAMES = ['left_shoulder', 'right_shoulder']
 const MAX_SHIFT = 60 // viewBox units either side of center -- "a lil", not a lot
 const SHIFT_SMOOTHING = 0.25 // 0..1, higher = snappier/less smoothing
+// how fast the "center" baseline drifts toward wherever the person actually stands.
+const BASELINE_SMOOTHING = 0.01
 
 function clamp(v, lo, hi) {
   return Math.min(hi, Math.max(lo, v))
@@ -124,19 +126,21 @@ function EmpanadaAvatar({ pose }) {
     points: limbPoints(limb, byName),
   }))
 
-  // Smoothed side-to-side drift: normalize the body center against the
-  // camera frame width so it doesn't depend on camera resolution, scale it
-  // down to a subtle range, and ease toward it each update instead of
-  // snapping (raw per-frame position is jittery). Freezes at its last value
-  // when the body center can't be measured, rather than jumping to center.
   const shiftRef = useRef(0)
   const [shiftX, setShiftX] = useState(0)
+
+  const baselineRef = useRef(null)
 
   useEffect(() => {
     if (!pose.frame_width) return
     const cx = bodyCenterX(byName)
     if (cx == null) return
-    const normalized = clamp((cx - pose.frame_width / 2) / (pose.frame_width / 2), -1, 1)
+    if (baselineRef.current == null) {
+      baselineRef.current = cx
+    } else {
+      baselineRef.current += (cx - baselineRef.current) * BASELINE_SMOOTHING
+    }
+    const normalized = clamp((cx - baselineRef.current) / (pose.frame_width / 2), -1, 1)
     const target = normalized * MAX_SHIFT
     shiftRef.current += (target - shiftRef.current) * SHIFT_SMOOTHING
     setShiftX(shiftRef.current)
