@@ -4,6 +4,7 @@ import EmpanadaAvatar from './EmpanadaAvatar.jsx'
 import SalsaGame from './SalsaGame.jsx'
 import Intro from './Intro.jsx'
 import SummitScene from './SummitScene.jsx'
+import Leaderboard from './Leaderboard.jsx'
 
 const API_BASE = 'http://127.0.0.1:8000'
 const WS_URL = 'ws://127.0.0.1:8000/ws/state'
@@ -93,7 +94,8 @@ function MonitorView({ health, pose, prediction, error }) {
 
 function App() {
   const [stage, setStage] = useState('intro') // intro | game
-  const [view, setView] = useState('game') // game | monitor
+  const [view, setView] = useState('game') // game | leaderboard | monitor
+  const [playerName, setPlayerName] = useState('')
   const [health, setHealth] = useState(null)
   const [pose, setPose] = useState(null)
   const [prediction, setPrediction] = useState(null)
@@ -178,7 +180,13 @@ function App() {
     <div className="app">
       <SummitScene />
 
-      {stage === 'intro' && <Intro onComplete={() => setStage('game')} />}
+      {stage === 'intro' && (
+        <Intro
+          playerName={playerName}
+          onPlayerNameChange={setPlayerName}
+          onComplete={() => setStage('game')}
+        />
+      )}
 
       {stage === 'game' && (
         <div className="stage" ref={stageRef}>
@@ -187,6 +195,9 @@ function App() {
               <button onClick={() => setView('game')} disabled={view === 'game'}>
                 Salsa Game
               </button>{' '}
+              <button onClick={() => setView('leaderboard')} disabled={view === 'leaderboard'}>
+                Leaderboard
+              </button>{' '}
               <button onClick={() => setView('monitor')} disabled={view === 'monitor'}>
                 Monitor
               </button>
@@ -194,7 +205,16 @@ function App() {
 
             {error && <p>cannot reach backend at {API_BASE}: {error}</p>}
 
-            {view === 'game' && <SalsaGame pose={pose} prediction={prediction} health={health} />}
+            {view === 'game' && (
+              <SalsaGame
+                pose={pose}
+                prediction={prediction}
+                health={health}
+                playerName={playerName}
+                onPlayerNameChange={setPlayerName}
+              />
+            )}
+            {view === 'leaderboard' && <Leaderboard refreshSignal={0} />}
             {view === 'monitor' && (
               <MonitorView health={health} pose={pose} prediction={prediction} error={error} />
             )}
