@@ -43,6 +43,12 @@ class PoseResponse(BaseModel):
     person_detected: bool
     keypoints: List[Keypoint] = []
     timestamp: float
+    # Dimensions (pixels) of the frame the keypoints were detected on, i.e.
+    # after config.FRAME_SCALE resizing -- lets clients turn a keypoint's raw
+    # x into a position normalized to the frame (e.g. for side-to-side
+    # tracking) without hardcoding the camera's resolution.
+    frame_width: int = 0
+    frame_height: int = 0
 
 
 class PredictionResponse(BaseModel):
@@ -142,10 +148,11 @@ class PosePipeline:
                     continue
                 frame = cv2.resize(frame, None, fx=config.FRAME_SCALE, fy=config.FRAME_SCALE,
                                     interpolation=cv2.INTER_AREA)
+                frame_height, frame_width = frame.shape[:2]
 
                 result = infer(self._pose_model, frame)
                 kpts_xy, kpts_conf = extract_keypoints(result)
-                self._update_pose(kpts_xy, kpts_conf)
+                self._update_pose(kpts_xy, kpts_conf, frame_width, frame_height)
 
                 if kpts_xy is not None:
                     self._kpts_buffer.append(kpts_xy)
@@ -159,10 +166,11 @@ class PosePipeline:
         finally:
             cap.release()
 
-    def _update_pose(self, kpts_xy, kpts_conf) -> None:
+    def _update_pose(self, kpts_xy, kpts_conf, frame_width, frame_height) -> None:
         now = time.time()
         if kpts_xy is None:
-            pose = PoseResponse(person_detected=False, timestamp=now)
+            pose = PoseResponse(person_detected=False, timestamp=now,
+                                 frame_width=frame_width, frame_height=frame_height)
         else:
             keypoints = [
                 Keypoint(
@@ -174,7 +182,8 @@ class PosePipeline:
                 )
                 for i in range(len(KEYPOINT_NAMES))
             ]
-            pose = PoseResponse(person_detected=True, keypoints=keypoints, timestamp=now)
+            pose = PoseResponse(person_detected=True, keypoints=keypoints, timestamp=now,
+                                 frame_width=frame_width, frame_height=frame_height)
         with self._lock:
             self._latest_pose = pose
 

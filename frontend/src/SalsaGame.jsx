@@ -131,7 +131,7 @@ function SalsaGame({ pose, prediction, health }) {
           <h2>{phase === 'ready' ? 'get ready...' : 'GO!'}</h2>
           <h2>{displayName(target)}</h2>
           {pose && pose.person_detected ? (
-            <EmpanadaAvatar keypoints={pose.keypoints} />
+            <EmpanadaAvatar pose={pose} />
           ) : (
             <p>step into frame!</p>
           )}

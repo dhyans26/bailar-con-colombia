@@ -59,7 +59,7 @@ function MonitorView({ health, pose, prediction, error }) {
       {pose && !pose.person_detected && <p>no person detected</p>}
       {pose && pose.person_detected && (
         <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-          <EmpanadaAvatar keypoints={pose.keypoints} />
+          <EmpanadaAvatar pose={pose} />
           <table border="1" cellPadding="4">
             <thead>
               <tr>

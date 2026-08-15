@@ -21,7 +21,8 @@
       "Bash(python3 -c \"import sys; print\\(sys.executable\\)\")",
       "Bash(python3 -c \"import uvicorn; print\\(uvicorn.__file__\\)\")",
       "Bash(pkill -f \"uvicorn api:app --host 127.0.0.1 --port 8099\")",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://127.0.0.1:8099/health)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://127.0.0.1:8099/health)",
+      "Bash(node -)"
     ],
     "additionalDirectories": [
       "/Users/vedpatel/code/Macondo"
