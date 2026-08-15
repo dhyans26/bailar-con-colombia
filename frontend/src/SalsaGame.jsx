@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import EmpanadaAvatar from './EmpanadaAvatar.jsx'
-import Leaderboard from './Leaderboard.jsx'
 import { supabase, LEADERBOARD_TABLE } from './supabaseClient.js'
 
 const ROUNDS_PER_GAME = 5
@@ -26,14 +25,12 @@ function pickTarget(moves, avoid) {
   return options[Math.floor(Math.random() * options.length)]
 }
 
-function SalsaGame({ pose, prediction, health }) {
+function SalsaGame({ pose, prediction, health, playerName, onPlayerNameChange }) {
   const [phase, setPhase] = useState('lobby') // lobby | ready | perform | finished
   const [round, setRound] = useState(0)
   const [target, setTarget] = useState(null)
   const [roundScores, setRoundScores] = useState([])
-  const [playerName, setPlayerName] = useState('')
   const [submitState, setSubmitState] = useState('idle') // idle | saving | done | error
-  const [refreshSignal, setRefreshSignal] = useState(0)
   const maxProbRef = useRef(0)
 
   const moves = playableMoves(health && health.labels)
@@ -96,7 +93,6 @@ function SalsaGame({ pose, prediction, health }) {
       setSubmitState('error')
     } else {
       setSubmitState('done')
-      setRefreshSignal((n) => n + 1)
     }
   }
 
@@ -166,7 +162,7 @@ function SalsaGame({ pose, prediction, health }) {
                 type="text"
                 placeholder="your name"
                 value={playerName}
-                onChange={(e) => setPlayerName(e.target.value)}
+                onChange={(e) => onPlayerNameChange(e.target.value)}
                 maxLength={40}
               />
               <button onClick={submitScore} disabled={!playerName.trim() || submitState === 'saving'}>
@@ -182,8 +178,6 @@ function SalsaGame({ pose, prediction, health }) {
           </button>
         </div>
       )}
-
-      <Leaderboard refreshSignal={refreshSignal} />
     </div>
   )
 }
