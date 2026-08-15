@@ -55,7 +55,7 @@ body {
   position: absolute;
   left: -2%;
   width: 104%;
-  bottom: 33vh;
+  bottom: 10vh;
   height: 11vh;
   color: #4a6b8c;
   opacity: 0.45;
@@ -64,9 +64,9 @@ body {
 
 .scene__church {
   position: absolute;
-  bottom: 28vh;
+  bottom: 5vh;
   left: 26%;
-  height: 68vh;
+  height: 76vh;
   width: auto;
   max-width: 96vw;
   object-fit: contain;
@@ -79,45 +79,36 @@ body {
 
 .scene__church-shadow {
   position: absolute;
-  bottom: 26vh;
+  bottom: 3vh;
   left: 26%;
-  width: 70vh;
-  height: 9vh;
+  width: 78vh;
+  height: 6vh;
   transform: translateX(-50%);
   background: radial-gradient(ellipse at center, rgba(24, 34, 16, 0.38), transparent 66%);
   pointer-events: none;
 }
 
-/* the empanada mascot, two-stepping in the background off to the right of
-   the church -- purely decorative, no pose tracking involved */
+/* the empanada mascot, off to the right of the church in the background --
+   this wraps the same live pose-tracking avatar shown in-game, so it mirrors
+   your moves; with nobody in frame it just sits on its fallback idle pose. */
 .scene__dancer {
   position: absolute;
-  bottom: 29vh;
+  /* negative on purpose: the avatar's viewBox has a lot of empty, invisible
+     space below its feet (room for the legs' fallback swing), so the box
+     needs to sit partly below the viewport edge -- harmlessly clipped by
+     .scene's overflow:hidden -- to bring the actual feet up onto the grass
+     instead of sinking into it */
+  bottom: -1vh;
   left: 68%;
-  height: 30vh;
-  width: auto;
-  object-fit: contain;
-  object-position: bottom;
-  transform-origin: 50% 100%;
+  transform: translateX(-50%);
   pointer-events: none;
-  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.3));
-  animation: empanada-dance 2.2s ease-in-out infinite;
 }
 
-@keyframes empanada-dance {
-  0%,
-  100% {
-    transform: translateX(-50%) rotate(-6deg) translateY(0);
-  }
-  25% {
-    transform: translateX(-50%) rotate(0deg) translateY(-2%);
-  }
-  50% {
-    transform: translateX(-50%) rotate(6deg) translateY(0);
-  }
-  75% {
-    transform: translateX(-50%) rotate(0deg) translateY(-2%);
-  }
+.scene__dancer svg {
+  display: block;
+  height: 38vh;
+  width: auto;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.3));
 }
 
 /* thin air sitting on the summit, so sky and ground do not butt up hard */
@@ -125,8 +116,8 @@ body {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 32vh;
-  height: 10vh;
+  bottom: 9vh;
+  height: 5.5vh;
   background: linear-gradient(to top, rgba(219, 233, 247, 0.55), transparent);
   pointer-events: none;
 }
@@ -137,7 +128,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 34vh;
+  height: 11vh;
   background:
     linear-gradient(to bottom, rgba(255, 255, 255, 0.35) 0 1px, transparent 1px),
     linear-gradient(to bottom, #87a044 0%, var(--grass) 24%, var(--grass-dark) 100%);
@@ -383,24 +374,33 @@ body {
   overflow: auto;
 }
 
-/* kept to a left-hand column so the iglesia behind it stays visible */
+/* kept to a left-hand column so the iglesia behind it stays visible.
+   Sized well past what a desk-bound app would need -- the player is on
+   their feet a few steps back from the screen, dancing, not reading up
+   close, so everything in here reads at "across the room" size. */
 .stage__panel {
-  max-width: 36rem;
-  padding: 1.25rem 1.5rem;
+  max-width: 40rem;
+  padding: 1.5rem 1.75rem;
   border: 1px solid rgba(244, 239, 230, 0.16);
   border-radius: 14px;
   background: rgba(8, 14, 22, 0.66);
   backdrop-filter: blur(6px);
+  font-size: clamp(1.1rem, 1.7vw, 1.35rem);
 }
 
 .stage__panel h1 {
-  margin: 0 0 0.75rem;
-  font-size: 1.5rem;
+  margin: 0 0 1rem;
+  font-size: clamp(2rem, 3.4vw, 2.6rem);
   letter-spacing: 0.06em;
 }
 
 .stage__panel h2 {
-  margin: 0.75rem 0 0.25rem;
+  margin: 1rem 0 0.4rem;
+  font-size: clamp(1.6rem, 2.8vw, 2.1rem);
+}
+
+.stage__panel p {
+  line-height: 1.5;
 }
 
 .stage__panel table {
@@ -408,15 +408,20 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+.stage__panel th,
+.stage__panel td {
+  padding: 0.35rem 0.7rem;
+}
+
 .stage__panel button,
 .stage__panel input {
-  padding: 0.4rem 0.8rem;
+  padding: 0.6rem 1.1rem;
   border: 1px solid rgba(244, 239, 230, 0.28);
   border-radius: 8px;
   background: rgba(244, 239, 230, 0.08);
   color: var(--ink);
   font: inherit;
-  font-size: 0.9rem;
+  font-size: 1.05rem;
 }
 
 .stage__panel button:not(:disabled) {
@@ -430,6 +435,193 @@ body {
 
 .stage__panel button:disabled {
   opacity: 0.45;
+}
+
+/* pairs the final-score heading with the meter so they read as one summary */
+.finished-summary {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.finished-summary h2 {
+  margin: 0;
+}
+
+/* live star-o-meter: fills up as the current move's confidence improves,
+   instead of only revealing a score once the round window closes -- 100
+   points per star, so a 5-round game tops out at 5. Stacked vertically
+   (bottom star fills first, like a level rising) with no card around it, so
+   it reads as a HUD element rather than another boxed panel. */
+.dance-meter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.dance-meter__label {
+  margin: 0;
+  font-size: 0.85rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(244, 239, 230, 0.65);
+}
+
+.dance-meter__stars {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.25rem;
+}
+
+.dance-meter__star {
+  position: relative;
+  display: block;
+  width: 2.6rem;
+  height: 2.6rem;
+  font-size: 2.6rem;
+  line-height: 1;
+  color: rgba(244, 239, 230, 0.22);
+}
+
+.dance-meter__star-outline {
+  display: block;
+}
+
+.dance-meter__star-fill {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  overflow: hidden;
+  color: var(--gold);
+  /* the live confidence signal jitters frame to frame; smoothing the height
+     keeps the fill reading as a meter instead of a flicker */
+  transition: height 0.15s ease-out;
+}
+
+.dance-meter__score {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.1rem;
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+/* the current round's call-out, portalled to <body> and blown up to fill
+   the screen -- see the comment on <DanceCallout> in SalsaGame.jsx for why
+   it can't just live inside .stage__panel. Text-only and click-through, so
+   the tab dock underneath stays reachable. */
+.dance-callout {
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 5vh 5vw;
+  text-align: center;
+  pointer-events: none;
+  text-shadow: 0 6px 30px rgba(0, 0, 0, 0.7), 0 2px 10px rgba(0, 0, 0, 0.85);
+}
+
+.dance-callout__round {
+  margin: 0;
+  font-size: clamp(1.4rem, 3vw, 2.2rem);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(244, 239, 230, 0.75);
+}
+
+.dance-callout__go {
+  margin: 0;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.dance-callout__move {
+  margin: 0;
+  font-size: clamp(4rem, 13vw, 10rem);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.dance-callout__warning {
+  margin: 0;
+  font-size: clamp(1.6rem, 3.4vw, 2.6rem);
+  color: var(--gold);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+/* docked to the right edge, vertically centered, instead of stacking in the
+   middle of the screen with the giant move name */
+.dance-callout__meter {
+  position: fixed;
+  right: clamp(1.5rem, 4vw, 3.5rem);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* floating tab switcher, docked to the bottom-right corner instead of
+   sitting inline above the panel content */
+.tab-dock {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 4;
+  display: flex;
+  gap: 0.2rem;
+  padding: 0.3rem;
+  border: 1px solid rgba(244, 239, 230, 0.16);
+  border-radius: 999px;
+  background: rgba(8, 14, 22, 0.72);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+.tab-dock__btn {
+  padding: 0.5rem 1.1rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(244, 239, 230, 0.62);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.tab-dock__btn:hover:not(:disabled) {
+  color: var(--ink);
+}
+
+.tab-dock__btn:disabled {
+  background: var(--gold);
+  color: #241a05;
+  cursor: default;
+}
+
+@media (max-width: 640px) {
+  .tab-dock {
+    right: 1rem;
+    bottom: 1rem;
+    padding: 0.25rem;
+  }
+
+  .tab-dock__btn {
+    padding: 0.45rem 0.8rem;
+    font-size: 0.72rem;
+  }
 }
 
 /* narrow viewports: the church already sits behind the left-hand panel by
@@ -448,9 +640,5 @@ body {
   .intro__hint {
     animation: none;
     opacity: 0.9;
-  }
-
-  .scene__dancer {
-    animation: none;
   }
 }

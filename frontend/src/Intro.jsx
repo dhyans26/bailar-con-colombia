@@ -1,13 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
-import {
-  BEATS,
-  CLIMB_AUDIO,
-  DEFAULT_HINT,
-  INTRO_MUSIC,
-  INTRO_MUSIC_VOLUME,
-  TITLE,
-} from './story.js'
+import { BEATS, CLIMB_AUDIO, DEFAULT_HINT, TITLE } from './story.js'
 
 // The ride up Monserrate. A title card, then one gondola clip per beat: the
 // clip plays, freezes on its last frame, its line of text fades in, and space
@@ -18,7 +11,7 @@ import {
 
 const TITLE_INDEX = -1
 
-function Intro({ playerName, onPlayerNameChange, onComplete }) {
+function Intro({ playerName, onPlayerNameChange, onComplete, muted = false }) {
   // -1 is the title card, 0..n-1 index into BEATS.
   const [index, setIndex] = useState(TITLE_INDEX)
   // Text only appears once the clip for this beat has finished.
@@ -31,13 +24,11 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
   const copyRef = useRef(null)
   const flashRef = useRef(null)
   const videoRefs = useRef([])
-  const musicRef = useRef(null)
 
   const indexRef = useRef(TITLE_INDEX)
   const showTextRef = useRef(true)
   const showNamePromptRef = useRef(false)
-  // Undocumented: M toggles the music. Deliberately absent from the hints.
-  const mutedRef = useRef(false)
+  const mutedRef = useRef(muted)
   const doneRef = useRef(false)
   const busyRef = useRef(false)
 
@@ -49,38 +40,6 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
   useLayoutEffect(() => {
     if (!titleRef.current) return
     gsap.set(titleRef.current, { xPercent: -50 })
-  }, [])
-
-  // Shakira over the title card and the whole climb. It lives and dies with
-  // this component, so the game that comes after it is never scored by it.
-  useEffect(() => {
-    if (!INTRO_MUSIC) return
-    const audio = new Audio(INTRO_MUSIC)
-    audio.loop = true
-    audio.volume = INTRO_MUSIC_VOLUME
-    audio.muted = mutedRef.current
-    musicRef.current = audio
-
-    // Autoplay before the player has touched the page is usually refused, so
-    // the first key or click on the title card is the fallback trigger.
-    const stopWaiting = () => {
-      window.removeEventListener('keydown', start)
-      window.removeEventListener('pointerdown', start)
-    }
-    function start() {
-      audio.play().then(stopWaiting).catch(() => {})
-    }
-    start()
-    window.addEventListener('keydown', start)
-    window.addEventListener('pointerdown', start)
-
-    return () => {
-      stopWaiting()
-      gsap.killTweensOf(audio)
-      audio.pause()
-      audio.src = ''
-      musicRef.current = null
-    }
   }, [])
 
   // Fade each line in as it arrives.
@@ -100,32 +59,17 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
     )
   }, [index, showText, reduced])
 
-  // Take the music down with the picture. duration 0 cuts it dead.
-  const stopMusic = useCallback((duration) => {
-    const audio = musicRef.current
-    if (!audio) return
-    if (!duration) {
-      audio.pause()
-      return
-    }
-    gsap.to(audio, {
-      volume: 0,
-      duration,
-      ease: 'power1.in',
-      onComplete: () => audio.pause(),
-    })
-  }, [])
-
-  // Mute rather than pause: the track keeps its place, and the fade-outs in
-  // stopMusic still run against volume without fighting this. The climb clips
-  // go quiet with it, so M silences the intro outright.
-  const toggleMute = useCallback(() => {
-    mutedRef.current = !mutedRef.current
-    if (musicRef.current) musicRef.current.muted = mutedRef.current
+  // The ambient track lives in App now, and so does the M hotkey that mutes
+  // it -- App owns every track, so it is the only place that can silence all
+  // of them at once. All that is left here is the climb clips' own audio,
+  // which follows the same flag down as a prop. The ref mirror keeps playBeat
+  // stable while still seeing the current value.
+  useEffect(() => {
+    mutedRef.current = muted
     videoRefs.current.forEach((v) => {
-      if (v) v.muted = !CLIMB_AUDIO || mutedRef.current
+      if (v) v.muted = !CLIMB_AUDIO || muted
     })
-  }, [])
+  }, [muted])
 
   const finish = useCallback(() => {
     if (doneRef.current) return
@@ -133,20 +77,19 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
     busyRef.current = true
     videoRefs.current.forEach((v) => v?.pause())
 
+    // The ambient track lives up in App, so it keeps playing as the picture
+    // washes out and the climb hands over to the game lobby.
     if (reduced) {
-      stopMusic(0)
       gsap.set(rootRef.current, { opacity: 0 })
       onComplete()
       return
     }
 
-    stopMusic(2.2)
-
     const tl = gsap.timeline({ onComplete })
     tl.to(copyRef.current, { opacity: 0, duration: 0.4, ease: 'power1.in' }, 0)
     tl.to(flashRef.current, { opacity: 1, duration: 1.2, ease: 'power2.in' }, 0.2)
     tl.to(rootRef.current, { opacity: 0, duration: 1, ease: 'power2.out' }, 1.4)
-  }, [onComplete, reduced, stopMusic])
+  }, [onComplete, reduced])
 
   // Start the clip for `next`, crossfading over whatever is on screen.
   const playBeat = useCallback(
@@ -258,11 +201,7 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
         }
         return
       }
-      // Modifiers excluded so this never steals Cmd+M and friends.
-      if ((e.key === 'm' || e.key === 'M') && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        e.preventDefault()
-        toggleMute()
-      } else if (e.code === 'Space' || e.key === ' ') {
+      if (e.code === 'Space' || e.key === ' ') {
         e.preventDefault()
         advance()
       } else if (e.key === 'Escape') {
@@ -272,7 +211,7 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [advance, finish, submitName, toggleMute])
+  }, [advance, finish, submitName])
 
   const beat = index >= 0 ? BEATS[index] : null
   const onTitle = index === TITLE_INDEX

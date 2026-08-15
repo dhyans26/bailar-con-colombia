@@ -148,12 +148,7 @@ function EmpanadaAvatar({ pose }) {
   }, [pose])
 
   return (
-    <svg
-      viewBox={`0 0 ${IMAGE_WIDTH} ${IMAGE_HEIGHT}`}
-      width="320"
-      height="240"
-      style={{ border: '1px solid black' }}
-    >
+    <svg viewBox={`0 0 ${IMAGE_WIDTH} ${IMAGE_HEIGHT}`} width="320" height="240">
       <defs>
         {/* objectBoundingBox (the default) means this recomputes per limb,
             so every segment gets its own light-crumb-to-crust gradient
@@ -166,7 +161,10 @@ function EmpanadaAvatar({ pose }) {
         </linearGradient>
       </defs>
       <g transform={`translate(${shiftX.toFixed(1)}, 0)`}>
-        <image href="/emp.png" x="0" y="0" width={IMAGE_WIDTH} height={IMAGE_HEIGHT} />
+        {/* emp.png ships with a translucent cream backdrop baked in rather
+            than true transparency; the cutout has that keyed out so the
+            character doesn't carry a hazy box wherever it's placed. */}
+        <image href="/emp-cutout.png" x="0" y="0" width={IMAGE_WIDTH} height={IMAGE_HEIGHT} />
         {limbs.map((limb) => {
           const pts = limb.points.map((p) => `${p.x},${p.y}`).join(' ')
           return (

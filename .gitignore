@@ -3,3 +3,4 @@ backend/__pycache__
 .vscode/*
 .env
 .venv/*
+.DS_Store

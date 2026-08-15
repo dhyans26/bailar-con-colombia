@@ -38,9 +38,10 @@ export const BEATS = [
   },
 ]
 
-// Music for the whole intro: it starts on the title card, carries through the
-// climb, and fades out as the game takes over -- the game never hears it.
-// Set INTRO_MUSIC to null for a silent intro.
+// Music for the intro and the game lobby: it starts on the title card, carries
+// through the climb, and keeps playing until a game actually starts -- then the
+// track chosen from public/game-music takes over and it comes back once the
+// game is over. Set INTRO_MUSIC to null for a silent intro.
 export const INTRO_MUSIC = '/music/shakira.mp3'
 export const INTRO_MUSIC_VOLUME = 0.55
 

@@ -1,10 +1,10 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
-import EmpanadaAvatar from './EmpanadaAvatar.jsx'
 import SalsaGame from './SalsaGame.jsx'
 import Intro from './Intro.jsx'
 import SummitScene from './SummitScene.jsx'
 import Leaderboard from './Leaderboard.jsx'
+import { INTRO_MUSIC, INTRO_MUSIC_VOLUME } from './story.js'
 
 const API_BASE = 'http://127.0.0.1:8000'
 const WS_URL = 'ws://127.0.0.1:8000/ws/state'
@@ -14,7 +14,7 @@ const WS_RECONNECT_MS = 1000
 function MonitorView({ health, pose, prediction, error }) {
   return (
     <div>
-      <h1>Macondo Pose / LSTM Monitor</h1>
+      <h1>Monitor</h1>
 
       {error && <p>cannot reach backend at {API_BASE}: {error}</p>}
 
@@ -63,7 +63,6 @@ function MonitorView({ health, pose, prediction, error }) {
       {pose && !pose.person_detected && <p>no person detected</p>}
       {pose && pose.person_detected && (
         <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-          <EmpanadaAvatar pose={pose} />
           <table border="1" cellPadding="4">
             <thead>
               <tr>
@@ -100,7 +99,15 @@ function App() {
   const [pose, setPose] = useState(null)
   const [prediction, setPrediction] = useState(null)
   const [error, setError] = useState(null)
+  // True while a round is actually being danced -- shakira stands down then.
+  const [gameActive, setGameActive] = useState(false)
+  const [muted, setMuted] = useState(false)
   const stageRef = useRef(null)
+  const lobbyMusicRef = useRef(null)
+  // Mirror of `muted` for effects that must not re-run when it flips.
+  const mutedRef = useRef(false)
+
+  const handleGameActiveChange = useCallback((active) => setGameActive(active), [])
 
   useEffect(() => {
     let cancelled = false
@@ -163,6 +170,80 @@ function App() {
     }
   }, [])
 
+  // Shakira is the ambient track for everything outside a live game: the intro,
+  // the lobby, the finished screen, the leaderboard. It hands over to the
+  // game-music track the instant a game goes live and comes back when it ends,
+  // so the player is never stuck in silence.
+  useEffect(() => {
+    if (!INTRO_MUSIC) return
+    const audio = new Audio(INTRO_MUSIC)
+    audio.loop = true
+    audio.volume = INTRO_MUSIC_VOLUME
+    audio.muted = mutedRef.current
+    lobbyMusicRef.current = audio
+
+    // Autoplay before the player has touched the page is usually refused, so
+    // the first key or click anywhere is the fallback trigger.
+    const stopWaiting = () => {
+      window.removeEventListener('keydown', start)
+      window.removeEventListener('pointerdown', start)
+    }
+    function start() {
+      audio.play().then(stopWaiting).catch(() => {})
+    }
+    start()
+    window.addEventListener('keydown', start)
+    window.addEventListener('pointerdown', start)
+
+    return () => {
+      stopWaiting()
+      audio.pause()
+      audio.src = ''
+      lobbyMusicRef.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    const audio = lobbyMusicRef.current
+    if (!audio) return
+    if (gameActive) {
+      audio.pause()
+    } else if (audio.paused) {
+      audio.play().catch(() => {})
+    }
+  }, [gameActive])
+
+  // M kills every sound at once. Undocumented on purpose -- it is deliberately
+  // absent from the hints and the UI. It lives up here because App is the only
+  // place that can see all of it: the ambient track it owns, the game music in
+  // SalsaGame, and the climb clips in Intro, the last two via the `muted` prop.
+  // Mute rather than pause, so a track keeps its place while silenced.
+  useEffect(() => {
+    mutedRef.current = muted
+    if (lobbyMusicRef.current) lobbyMusicRef.current.muted = muted
+  }, [muted])
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key !== 'm' && e.key !== 'M') return
+      // Modifiers excluded so this never steals Cmd+M and friends, and text
+      // fields excluded so typing an "m" into the name prompt is just an "m".
+      if (e.metaKey || e.ctrlKey || e.altKey) return
+      const tag = e.target?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) return
+      e.preventDefault()
+      setMuted((m) => !m)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  // Leaving the game view abandons any in-progress round, so hand the ambient
+  // track back over instead of leaving the player in silence.
+  useEffect(() => {
+    if (view !== 'game') setGameActive(false)
+  }, [view])
+
   // The summit is already sitting behind the intro, so arriving at the game is
   // just the panel coming up on top of it.
   useLayoutEffect(() => {
@@ -178,47 +259,56 @@ function App() {
   // model is already collecting frames by the time the climb finishes.
   return (
     <div className="app">
-      <SummitScene />
+      <SummitScene pose={pose} />
 
       {stage === 'intro' && (
         <Intro
           playerName={playerName}
           onPlayerNameChange={setPlayerName}
           onComplete={() => setStage('game')}
+          muted={muted}
         />
       )}
 
       {stage === 'game' && (
-        <div className="stage" ref={stageRef}>
-          <div className="stage__panel">
-            <div style={{ marginBottom: '16px' }}>
-              <button onClick={() => setView('game')} disabled={view === 'game'}>
-                Salsa Game
-              </button>{' '}
-              <button onClick={() => setView('leaderboard')} disabled={view === 'leaderboard'}>
-                Leaderboard
-              </button>{' '}
-              <button onClick={() => setView('monitor')} disabled={view === 'monitor'}>
-                Monitor
-              </button>
+        <>
+          <div className="stage" ref={stageRef}>
+            <div className="stage__panel">
+              {error && <p>cannot reach backend at {API_BASE}: {error}</p>}
+
+              {view === 'game' && (
+                <SalsaGame
+                  pose={pose}
+                  prediction={prediction}
+                  health={health}
+                  playerName={playerName}
+                  onGameActiveChange={handleGameActiveChange}
+                  muted={muted}
+                />
+              )}
+              {view === 'leaderboard' && <Leaderboard refreshSignal={0} />}
+              {view === 'monitor' && (
+                <MonitorView health={health} pose={pose} prediction={prediction} error={error} />
+              )}
             </div>
-
-            {error && <p>cannot reach backend at {API_BASE}: {error}</p>}
-
-            {view === 'game' && (
-              <SalsaGame
-                pose={pose}
-                prediction={prediction}
-                health={health}
-                playerName={playerName}
-              />
-            )}
-            {view === 'leaderboard' && <Leaderboard refreshSignal={0} />}
-            {view === 'monitor' && (
-              <MonitorView health={health} pose={pose} prediction={prediction} error={error} />
-            )}
           </div>
-        </div>
+
+          <nav className="tab-dock">
+            <button className="tab-dock__btn" onClick={() => setView('game')} disabled={view === 'game'}>
+              Salsa Game
+            </button>
+            <button
+              className="tab-dock__btn"
+              onClick={() => setView('leaderboard')}
+              disabled={view === 'leaderboard'}
+            >
+              Leaderboard
+            </button>
+            <button className="tab-dock__btn" onClick={() => setView('monitor')} disabled={view === 'monitor'}>
+              Monitor
+            </button>
+          </nav>
+        </>
       )}
     </div>
   )
