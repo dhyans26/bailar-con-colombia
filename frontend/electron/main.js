@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from "electron";
 import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -9,7 +10,22 @@ const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
 
 // frontend/electron/main.js -> ../../backend
 const BACKEND_DIR = path.join(__dirname, "../../backend");
-const PYTHON_BIN = process.env.PYTHON_BIN || "python";
+
+// The repo's own .venv wins over whatever `python` happens to be first on
+// PATH -- a machine-wide interpreter is unlikely to have torch/ultralytics,
+// and picking one up silently gives a window with a dead backend behind it.
+// PYTHON_BIN still overrides, for anyone using conda or another env.
+function resolvePython() {
+  if (process.env.PYTHON_BIN) return process.env.PYTHON_BIN;
+  const venv = path.join(__dirname, "../..", ".venv");
+  const candidates = [
+    path.join(venv, "bin", "python"),
+    path.join(venv, "Scripts", "python.exe"),
+  ];
+  return candidates.find(existsSync) ?? "python";
+}
+
+const PYTHON_BIN = resolvePython();
 
 let backendProcess = null;
 

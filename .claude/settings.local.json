@@ -46,7 +46,8 @@
       "Bash(xargs -r kill)",
       "Bash(ListAgents)",
       "Bash(echo \"build exit: $?\")",
-      "Bash(echo \"lint exit: $?\")"
+      "Bash(echo \"lint exit: $?\")",
+      "Bash(.venv/bin/python -c ' *)"
     ],
     "additionalDirectories": [
       "/Users/vedpatel/code/Macondo",
