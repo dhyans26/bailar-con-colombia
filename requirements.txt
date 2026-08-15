@@ -1,5 +1,4 @@
-# Python 3.12.7 (matches the dev environment this was pinned against)
-opencv-python==5.0.0.93
-numpy==2.5.2
-torch==2.13.0
-ultralytics==8.4.120
+opencv-python
+numpy
+torch
+ultralytics
