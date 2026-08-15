@@ -45,12 +45,9 @@
       "Bash(lsof -ti:5175 -sTCP:LISTEN)",
       "Bash(xargs -r kill)",
       "Bash(ListAgents)",
-<<<<<<< HEAD
       "Bash(echo \"build exit: $?\")",
       "Bash(echo \"lint exit: $?\")",
       "Bash(.venv/bin/python -c ' *)",
-=======
->>>>>>> c588afead891cdc7fec1ad2488a75665da8fa059
       "Bash(curl -sf http://localhost:5173)",
       "Bash(break)",
       "Bash(chromium-cli --help)",
