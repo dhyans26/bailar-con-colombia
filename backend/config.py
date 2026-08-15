@@ -4,4 +4,4 @@ KPT_CONF_THRES = 0.3
 
 TARGET_FPS = 15
 WINDOW_SECONDS = 2.0
-WINDOW_FRAMES = int(TARGET_FPS * WINDOW_SECONDS)  # 30 -- default rolling window for test_lstm_model.py
+WINDOW_FRAMES = int(TARGET_FPS * WINDOW_SECONDS)  # 30: default rolling window for test_lstm_model.py

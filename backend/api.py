@@ -8,6 +8,7 @@
 # Run with:
 #   uvicorn api:app --reload --port 8000
 
+import asyncio
 import threading
 import time
 from collections import deque
@@ -17,7 +18,7 @@ from typing import Dict, List, Optional
 
 import cv2
 import numpy as np
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -91,6 +92,10 @@ class PosePipeline:
         self._latest_pose = PoseResponse(person_detected=False, timestamp=time.time())
         self._latest_prediction = PredictionResponse(
             ready=False, frames_collected=0, frames_required=MIN_FRAMES, timestamp=time.time())
+        # Bumped once per completed loop iteration (pose + prediction both
+        # refreshed). /ws/state watches this instead of re-sending on a fixed
+        # timer, so pushes happen exactly as fast as new results exist.
+        self._version = 0
 
     def start(self) -> None:
         self._lstm_model, self._lstm_cfg, self._feature_mean, self._feature_std = \
@@ -111,6 +116,10 @@ class PosePipeline:
     def get_prediction(self) -> PredictionResponse:
         with self._lock:
             return self._latest_prediction
+
+    def get_state(self) -> "tuple[PoseResponse, PredictionResponse, int]":
+        with self._lock:
+            return self._latest_pose, self._latest_prediction, self._version
 
     def get_error(self) -> Optional[str]:
         with self._lock:
@@ -144,6 +153,9 @@ class PosePipeline:
                 else:
                     self._kpts_buffer.clear()
                     self._update_prediction()
+
+                with self._lock:
+                    self._version += 1
         finally:
             cap.release()
 
@@ -239,3 +251,30 @@ def get_prediction() -> PredictionResponse:
 def get_state() -> StateResponse:
     """Pose + prediction in a single call, for polling clients."""
     return StateResponse(pose=pipeline.get_pose(), prediction=pipeline.get_prediction())
+
+
+# Poll interval (seconds) for checking the pipeline's version counter from
+# inside the websocket loop, not a send interval. A message only goes out
+# when the version actually changed, so this just bounds the extra latency
+# this layer can add (worst case) on top of however fast the background
+# thread is producing new frames.
+_WS_CHECK_INTERVAL = 0.01
+
+@app.websocket("/ws/state")
+async def ws_state(websocket: WebSocket) -> None:
+    """Pushes {pose, prediction} the moment the background pipeline produces
+    a new result, instead of making the client poll on a fixed timer."""
+    await websocket.accept()
+    last_version = -1
+    try:
+        while True:
+            pose, prediction, version = pipeline.get_state()
+            if version != last_version:
+                last_version = version
+                await websocket.send_json({
+                    "pose": pose.model_dump(),
+                    "prediction": prediction.model_dump(),
+                })
+            await asyncio.sleep(_WS_CHECK_INTERVAL)
+    except WebSocketDisconnect:
+        pass
