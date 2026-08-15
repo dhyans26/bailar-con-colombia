@@ -28,6 +28,8 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
   const indexRef = useRef(TITLE_INDEX)
   const showTextRef = useRef(true)
   const showNamePromptRef = useRef(false)
+  // Undocumented: M toggles the music. Deliberately absent from the hints.
+  const mutedRef = useRef(false)
   const doneRef = useRef(false)
   const busyRef = useRef(false)
 
@@ -39,6 +41,38 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
   useLayoutEffect(() => {
     if (!titleRef.current) return
     gsap.set(titleRef.current, { xPercent: -50 })
+  }, [])
+
+  // Shakira over the title card and the whole climb. It lives and dies with
+  // this component, so the game that comes after it is never scored by it.
+  useEffect(() => {
+    if (!INTRO_MUSIC) return
+    const audio = new Audio(INTRO_MUSIC)
+    audio.loop = true
+    audio.volume = INTRO_MUSIC_VOLUME
+    audio.muted = mutedRef.current
+    musicRef.current = audio
+
+    // Autoplay before the player has touched the page is usually refused, so
+    // the first key or click on the title card is the fallback trigger.
+    const stopWaiting = () => {
+      window.removeEventListener('keydown', start)
+      window.removeEventListener('pointerdown', start)
+    }
+    function start() {
+      audio.play().then(stopWaiting).catch(() => {})
+    }
+    start()
+    window.addEventListener('keydown', start)
+    window.addEventListener('pointerdown', start)
+
+    return () => {
+      stopWaiting()
+      gsap.killTweensOf(audio)
+      audio.pause()
+      audio.src = ''
+      musicRef.current = null
+    }
   }, [])
 
   // Fade each line in as it arrives.
@@ -57,6 +91,29 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
       },
     )
   }, [index, showText, reduced])
+
+  // Take the music down with the picture. duration 0 cuts it dead.
+  const stopMusic = useCallback((duration) => {
+    const audio = musicRef.current
+    if (!audio) return
+    if (!duration) {
+      audio.pause()
+      return
+    }
+    gsap.to(audio, {
+      volume: 0,
+      duration,
+      ease: 'power1.in',
+      onComplete: () => audio.pause(),
+    })
+  }, [])
+
+  // Mute rather than pause: the track keeps its place, and the fade-outs in
+  // stopMusic still run against volume without fighting this.
+  const toggleMute = useCallback(() => {
+    mutedRef.current = !mutedRef.current
+    if (musicRef.current) musicRef.current.muted = mutedRef.current
+  }, [])
 
   const finish = useCallback(() => {
     if (doneRef.current) return
@@ -138,8 +195,9 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
 
   const advance = useCallback(() => {
     // busy = a clip is crossfading in, so a fast double-tap cannot blow
-    // straight through the clip that just started.
-    if (doneRef.current || busyRef.current) return
+    // straight through the clip that just started. The name prompt is modal:
+    // nothing moves until it is submitted.
+    if (doneRef.current || busyRef.current || showNamePromptRef.current) return
 
     // Mid-clip: jump to the end rather than making the player wait it out.
     if (!showTextRef.current) {
@@ -187,7 +245,11 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
         }
         return
       }
-      if (e.code === 'Space' || e.key === ' ') {
+      // Modifiers excluded so this never steals Cmd+M and friends.
+      if ((e.key === 'm' || e.key === 'M') && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault()
+        toggleMute()
+      } else if (e.code === 'Space' || e.key === ' ') {
         e.preventDefault()
         advance()
       } else if (e.key === 'Escape') {
@@ -197,7 +259,7 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [advance, finish, submitName])
+  }, [advance, finish, submitName, toggleMute])
 
   const beat = index >= 0 ? BEATS[index] : null
   const onTitle = index === TITLE_INDEX
@@ -230,11 +292,12 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
       <div className="intro__vignette" />
       <div className="intro__flash" ref={flashRef} />
 
+      {/* Clicks anywhere on the backdrop stop here — outside the card is not
+          a way to dismiss the prompt and start the climb. */}
       {showNamePrompt && (
-        <div className="intro__name-overlay">
+        <div className="intro__name-overlay" onClick={(e) => e.stopPropagation()}>
           <div
             className="intro__name-card"
-            onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
             aria-labelledby="intro-name-heading"

@@ -65,7 +65,7 @@ body {
 .scene__church {
   position: absolute;
   bottom: 28vh;
-  left: 64%;
+  left: 26%;
   height: 68vh;
   width: auto;
   max-width: 96vw;
@@ -80,12 +80,44 @@ body {
 .scene__church-shadow {
   position: absolute;
   bottom: 26vh;
-  left: 64%;
+  left: 26%;
   width: 70vh;
   height: 9vh;
   transform: translateX(-50%);
   background: radial-gradient(ellipse at center, rgba(24, 34, 16, 0.38), transparent 66%);
   pointer-events: none;
+}
+
+/* the empanada mascot, two-stepping in the background off to the right of
+   the church -- purely decorative, no pose tracking involved */
+.scene__dancer {
+  position: absolute;
+  bottom: 29vh;
+  left: 68%;
+  height: 30vh;
+  width: auto;
+  object-fit: contain;
+  object-position: bottom;
+  transform-origin: 50% 100%;
+  pointer-events: none;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.3));
+  animation: empanada-dance 2.2s ease-in-out infinite;
+}
+
+@keyframes empanada-dance {
+  0%,
+  100% {
+    transform: translateX(-50%) rotate(-6deg) translateY(0);
+  }
+  25% {
+    transform: translateX(-50%) rotate(0deg) translateY(-2%);
+  }
+  50% {
+    transform: translateX(-50%) rotate(6deg) translateY(0);
+  }
+  75% {
+    transform: translateX(-50%) rotate(0deg) translateY(-2%);
+  }
 }
 
 /* thin air sitting on the summit, so sky and ground do not butt up hard */
@@ -400,15 +432,15 @@ body {
   opacity: 0.45;
 }
 
-/* no room for a left-hand panel and the iglesia beside it — recentre it */
+/* narrow viewports: the church already sits behind the left-hand panel by
+   design, but there's no room for the dancer off to the right as well */
 @media (max-width: 1100px) {
-  .scene__church,
-  .scene__church-shadow {
-    left: 50%;
-  }
-
   .scene__church {
     height: 56vh;
+  }
+
+  .scene__dancer {
+    display: none;
   }
 }
 
@@ -416,5 +448,9 @@ body {
   .intro__hint {
     animation: none;
     opacity: 0.9;
+  }
+
+  .scene__dancer {
+    animation: none;
   }
 }

@@ -14,6 +14,7 @@ function SummitScene() {
       </svg>
 
       <img className="scene__church" src="/church_monserrate.png" alt="" />
+      <img className="scene__dancer" src="/emp-cutout.png" alt="" />
       <div className="scene__haze" />
 
       {/* ground paints over the church's steps so it reads as planted on the

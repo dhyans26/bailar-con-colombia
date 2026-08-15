@@ -78,6 +78,7 @@ function SalsaGame({ pose, prediction, health, playerName, onGameActiveChange })
     const audio = new Audio()
     audio.loop = true
     audio.volume = GAME_MUSIC_VOLUME
+    audio.muted = mutedRef.current
     musicRef.current = audio
     return () => {
       audio.pause()
