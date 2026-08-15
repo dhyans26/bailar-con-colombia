@@ -55,7 +55,7 @@ body {
   position: absolute;
   left: -2%;
   width: 104%;
-  bottom: 19vh;
+  bottom: 10vh;
   height: 11vh;
   color: #4a6b8c;
   opacity: 0.45;
@@ -64,7 +64,7 @@ body {
 
 .scene__church {
   position: absolute;
-  bottom: 14vh;
+  bottom: 5vh;
   left: 26%;
   height: 76vh;
   width: auto;
@@ -79,10 +79,10 @@ body {
 
 .scene__church-shadow {
   position: absolute;
-  bottom: 12vh;
+  bottom: 3vh;
   left: 26%;
   width: 78vh;
-  height: 10vh;
+  height: 6vh;
   transform: translateX(-50%);
   background: radial-gradient(ellipse at center, rgba(24, 34, 16, 0.38), transparent 66%);
   pointer-events: none;
@@ -93,10 +93,12 @@ body {
    your moves; with nobody in frame it just sits on its fallback idle pose. */
 .scene__dancer {
   position: absolute;
-  /* the avatar's viewBox has a lot of empty space below its feet (room for
-     the legs' fallback swing), so this sits well below the ground line to
-     bring the actual feet down onto the grass instead of floating above it */
-  bottom: 6vh;
+  /* negative on purpose: the avatar's viewBox has a lot of empty, invisible
+     space below its feet (room for the legs' fallback swing), so the box
+     needs to sit partly below the viewport edge -- harmlessly clipped by
+     .scene's overflow:hidden -- to bring the actual feet up onto the grass
+     instead of sinking into it */
+  bottom: -1vh;
   left: 68%;
   transform: translateX(-50%);
   pointer-events: none;
@@ -114,8 +116,8 @@ body {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 18vh;
-  height: 10vh;
+  bottom: 9vh;
+  height: 5.5vh;
   background: linear-gradient(to top, rgba(219, 233, 247, 0.55), transparent);
   pointer-events: none;
 }
@@ -126,7 +128,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 20vh;
+  height: 11vh;
   background:
     linear-gradient(to bottom, rgba(255, 255, 255, 0.35) 0 1px, transparent 1px),
     linear-gradient(to bottom, #87a044 0%, var(--grass) 24%, var(--grass-dark) 100%);

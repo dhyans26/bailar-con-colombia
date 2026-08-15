@@ -68,7 +68,13 @@
       "Bash(node scale-shot.mjs)",
       "Bash(lsof -ti:5177 -sTCP:LISTEN)",
       "Bash(git status *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(node measure4.mjs)",
+      "Bash(echo \"exit:$?\")",
+      "Bash(echo \"grep exit=$?\")",
+      "Bash(sed -i '' 's/5178/5179/' measure4.mjs)",
+      "Bash(node debug2.mjs)"
     ],
     "additionalDirectories": [
       "/Users/vedpatel/code/Macondo",

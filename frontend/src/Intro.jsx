@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
-import { BEATS, CLIMB_AUDIO, DEFAULT_HINT, TITLE } from './story.js'
+import { BEATS, CLIMB_AUDIO, DEFAULT_HINT, INTRO_MUSIC, INTRO_MUSIC_VOLUME, TITLE } from './story.js'
 
 // The ride up Monserrate. A title card, then one gondola clip per beat: the
 // clip plays, freezes on its last frame, its line of text fades in, and space
