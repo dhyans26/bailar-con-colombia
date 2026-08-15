@@ -44,7 +44,9 @@
       "Bash(echo \"===exit $?===\")",
       "Bash(lsof -ti:5175 -sTCP:LISTEN)",
       "Bash(xargs -r kill)",
-      "Bash(ListAgents)"
+      "Bash(ListAgents)",
+      "Bash(echo \"build exit: $?\")",
+      "Bash(echo \"lint exit: $?\")"
     ],
     "additionalDirectories": [
       "/Users/vedpatel/code/Macondo",

@@ -117,10 +117,14 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
   }, [])
 
   // Mute rather than pause: the track keeps its place, and the fade-outs in
-  // stopMusic still run against volume without fighting this.
+  // stopMusic still run against volume without fighting this. The climb clips
+  // go quiet with it, so M silences the intro outright.
   const toggleMute = useCallback(() => {
     mutedRef.current = !mutedRef.current
     if (musicRef.current) musicRef.current.muted = mutedRef.current
+    videoRefs.current.forEach((v) => {
+      if (v) v.muted = !CLIMB_AUDIO || mutedRef.current
+    })
   }, [])
 
   const finish = useCallback(() => {
@@ -165,7 +169,7 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
       }
 
       video.currentTime = 0
-      video.muted = !CLIMB_AUDIO
+      video.muted = !CLIMB_AUDIO || mutedRef.current
       video.play().catch(() => {
         // Autoplay with sound refused — retry silently instead of stalling.
         video.muted = true
