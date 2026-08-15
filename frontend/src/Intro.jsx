@@ -194,8 +194,9 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
 
   const advance = useCallback(() => {
     // busy = a clip is crossfading in, so a fast double-tap cannot blow
-    // straight through the clip that just started.
-    if (doneRef.current || busyRef.current) return
+    // straight through the clip that just started. The name prompt is modal:
+    // nothing moves until it is submitted.
+    if (doneRef.current || busyRef.current || showNamePromptRef.current) return
 
     // Mid-clip: jump to the end rather than making the player wait it out.
     if (!showTextRef.current) {
@@ -286,11 +287,12 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
       <div className="intro__vignette" />
       <div className="intro__flash" ref={flashRef} />
 
+      {/* Clicks anywhere on the backdrop stop here — outside the card is not
+          a way to dismiss the prompt and start the climb. */}
       {showNamePrompt && (
-        <div className="intro__name-overlay">
+        <div className="intro__name-overlay" onClick={(e) => e.stopPropagation()}>
           <div
             className="intro__name-card"
-            onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
             aria-labelledby="intro-name-heading"
