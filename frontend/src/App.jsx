@@ -101,11 +101,16 @@ function App() {
   const [error, setError] = useState(null)
   // True while a round is actually being danced -- shakira stands down then.
   const [gameActive, setGameActive] = useState(false)
+<<<<<<< HEAD
   const [muted, setMuted] = useState(false)
   const stageRef = useRef(null)
   const lobbyMusicRef = useRef(null)
   // Mirror of `muted` for effects that must not re-run when it flips.
   const mutedRef = useRef(false)
+=======
+  const stageRef = useRef(null)
+  const lobbyMusicRef = useRef(null)
+>>>>>>> c588afead891cdc7fec1ad2488a75665da8fa059
 
   const handleGameActiveChange = useCallback((active) => setGameActive(active), [])
 
@@ -179,7 +184,10 @@ function App() {
     const audio = new Audio(INTRO_MUSIC)
     audio.loop = true
     audio.volume = INTRO_MUSIC_VOLUME
+<<<<<<< HEAD
     audio.muted = mutedRef.current
+=======
+>>>>>>> c588afead891cdc7fec1ad2488a75665da8fa059
     lobbyMusicRef.current = audio
 
     // Autoplay before the player has touched the page is usually refused, so
@@ -213,6 +221,7 @@ function App() {
     }
   }, [gameActive])
 
+<<<<<<< HEAD
   // M kills every sound at once. Undocumented on purpose -- it is deliberately
   // absent from the hints and the UI. It lives up here because App is the only
   // place that can see all of it: the ambient track it owns, the game music in
@@ -238,6 +247,8 @@ function App() {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
+=======
+>>>>>>> c588afead891cdc7fec1ad2488a75665da8fa059
   // Leaving the game view abandons any in-progress round, so hand the ambient
   // track back over instead of leaving the player in silence.
   useEffect(() => {
@@ -283,7 +294,10 @@ function App() {
                   health={health}
                   playerName={playerName}
                   onGameActiveChange={handleGameActiveChange}
+<<<<<<< HEAD
                   muted={muted}
+=======
+>>>>>>> c588afead891cdc7fec1ad2488a75665da8fa059
                 />
               )}
               {view === 'leaderboard' && <Leaderboard refreshSignal={0} />}

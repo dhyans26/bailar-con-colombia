@@ -59,6 +59,7 @@ function Intro({ playerName, onPlayerNameChange, onComplete, muted = false }) {
     )
   }, [index, showText, reduced])
 
+<<<<<<< HEAD
   // The ambient track lives in App now, and so does the M hotkey that mutes
   // it -- App owns every track, so it is the only place that can silence all
   // of them at once. All that is left here is the climb clips' own audio,
@@ -70,6 +71,15 @@ function Intro({ playerName, onPlayerNameChange, onComplete, muted = false }) {
       if (v) v.muted = !CLIMB_AUDIO || muted
     })
   }, [muted])
+=======
+  // Mute is currently a no-op stub: the ambient track this used to control
+  // now lives in App (see the comment in finish() below), and App doesn't
+  // yet expose a way for Intro to reach it. Kept so the 'M' hotkey and the
+  // hint text stay intact for whenever that wiring lands.
+  const toggleMute = useCallback(() => {
+    mutedRef.current = !mutedRef.current
+  }, [])
+>>>>>>> c588afead891cdc7fec1ad2488a75665da8fa059
 
   const finish = useCallback(() => {
     if (doneRef.current) return
