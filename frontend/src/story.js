@@ -38,6 +38,12 @@ export const BEATS = [
   },
 ]
 
+// Music for the whole intro: it starts on the title card, carries through the
+// climb, and fades out as the game takes over -- the game never hears it.
+// Set INTRO_MUSIC to null for a silent intro.
+export const INTRO_MUSIC = '/music/shakira.mp3'
+export const INTRO_MUSIC_VOLUME = 0.55
+
 // Shown under every beat that does not set its own `hint`.
 export const DEFAULT_HINT = 'space to continue'
 
