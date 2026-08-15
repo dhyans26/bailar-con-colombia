@@ -32,14 +32,11 @@ function Intro({ onComplete }) {
     typeof window !== 'undefined' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-  // Slow drift on the title image so the start screen is not dead still.
+  // Title image sits still; only centering is applied.
   useLayoutEffect(() => {
     if (!titleRef.current) return
     gsap.set(titleRef.current, { xPercent: -50 })
-    if (reduced) return
-    const tween = gsap.to(titleRef.current, { scale: 1.12, duration: 24, ease: 'none' })
-    return () => tween.kill()
-  }, [reduced])
+  }, [])
 
   // Fade each line in as it arrives.
   useLayoutEffect(() => {
