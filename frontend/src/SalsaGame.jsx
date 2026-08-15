@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import EmpanadaAvatar from './EmpanadaAvatar.jsx'
-import { supabase, LEADERBOARD_TABLE } from './supabaseClient.js'
+import { supabase } from './supabaseClient.js'
 
 const ROUNDS_PER_GAME = 5
 const READY_MS = 2000
@@ -25,19 +25,21 @@ function pickTarget(moves, avoid) {
   return options[Math.floor(Math.random() * options.length)]
 }
 
-function SalsaGame({ pose, prediction, health, playerName, onPlayerNameChange }) {
+function SalsaGame({ pose, prediction, health, playerName }) {
   const [phase, setPhase] = useState('lobby') // lobby | ready | perform | finished
   const [round, setRound] = useState(0)
   const [target, setTarget] = useState(null)
   const [roundScores, setRoundScores] = useState([])
   const [submitState, setSubmitState] = useState('idle') // idle | saving | done | error
   const maxProbRef = useRef(0)
+  const submittedRef = useRef(false)
 
   const moves = playableMoves(health && health.labels)
 
   const startGame = () => {
     setRoundScores([])
     setSubmitState('idle')
+    submittedRef.current = false
     setRound(0)
     setTarget(pickTarget(moves, null))
     setPhase('ready')
@@ -82,19 +84,32 @@ function SalsaGame({ pose, prediction, health, playerName, onPlayerNameChange })
 
   const totalScore = roundScores.reduce((sum, r) => sum + r.score, 0)
 
-  const submitScore = async () => {
+  // The name was captured on the title card, so once the last round lands the
+  // score goes up to the leaderboard on its own -- no submit prompt.
+  useEffect(() => {
+    if (phase !== 'finished' || submittedRef.current) return
     const name = playerName.trim()
     if (!name) return
+    submittedRef.current = true
+    let cancelled = false
     setSubmitState('saving')
-    const { error } = await supabase
-      .from(LEADERBOARD_TABLE)
-      .insert({ player_name: name, score: totalScore, moves_played: ROUNDS_PER_GAME })
-    if (error) {
-      setSubmitState('error')
-    } else {
-      setSubmitState('done')
+    // submit_score() is a database upsert that keeps only the best score per
+    // player name -- a new lower score never overwrites a higher one.
+    supabase
+      .rpc('submit_score', {
+        p_player_name: name,
+        p_score: totalScore,
+        p_moves_played: ROUNDS_PER_GAME,
+      })
+      .then(({ error }) => {
+        if (cancelled) return
+        setSubmitState(error ? 'error' : 'done')
+      })
+    return () => {
+      cancelled = true
     }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase])
 
   return (
     <div>
@@ -156,22 +171,9 @@ function SalsaGame({ pose, prediction, health, playerName, onPlayerNameChange })
             </tbody>
           </table>
 
-          {submitState !== 'done' && (
-            <div style={{ marginTop: '8px' }}>
-              <input
-                type="text"
-                placeholder="your name"
-                value={playerName}
-                onChange={(e) => onPlayerNameChange(e.target.value)}
-                maxLength={40}
-              />
-              <button onClick={submitScore} disabled={!playerName.trim() || submitState === 'saving'}>
-                {submitState === 'saving' ? 'saving...' : 'submit to leaderboard'}
-              </button>
-              {submitState === 'error' && <p>couldn't save score -- try again.</p>}
-            </div>
-          )}
-          {submitState === 'done' && <p>score saved!</p>}
+          {submitState === 'saving' && <p>submitting your score to the leaderboard...</p>}
+          {submitState === 'done' && <p>score saved to the leaderboard!</p>}
+          {submitState === 'error' && <p>couldn't save your score to the leaderboard.</p>}
 
           <button style={{ marginTop: '8px' }} onClick={startGame}>
             play again
