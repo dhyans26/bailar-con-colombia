@@ -2,3 +2,5 @@ opencv-python
 numpy
 torch
 ultralytics
+fastapi
+uvicorn[standard]
