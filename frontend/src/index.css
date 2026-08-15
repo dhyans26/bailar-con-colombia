@@ -217,6 +217,47 @@ body {
   );
 }
 
+/* the leaderboard panel on the title card -- the main menu. Mirrors
+   .stage__panel so the board reads as part of the app rather than a stray
+   card floating over the summit. */
+.intro__leaderboard {
+  position: absolute;
+  top: clamp(1.5rem, 6vh, 3.5rem);
+  right: clamp(1.5rem, 4vw, 3.5rem);
+  width: min(24rem, 40vw);
+  max-height: 64vh;
+  overflow: auto;
+  padding: 1.4rem 1.5rem;
+  border: 1px solid rgba(244, 239, 230, 0.16);
+  border-radius: 14px;
+  background: rgba(8, 14, 22, 0.66);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  font-size: clamp(0.9rem, 1.4vw, 1.05rem);
+  cursor: default;
+  user-select: text;
+}
+
+.intro__leaderboard h2 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
+}
+
+.intro__leaderboard p {
+  font-size: 0.9em;
+}
+
+.intro__leaderboard table {
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.intro__leaderboard th,
+.intro__leaderboard td {
+  padding: 0.3rem 0.6rem;
+  text-align: left;
+}
+
 .intro__copy {
   position: absolute;
   left: 50%;
@@ -447,6 +488,14 @@ body {
 
 .finished-summary h2 {
   margin: 0;
+}
+
+/* the post-game choices: another round with the same team, or back to menu */
+.finished-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1.25rem;
 }
 
 /* live star-o-meter: fills up as the current move's confidence improves,
