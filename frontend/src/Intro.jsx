@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
-import { BEATS, CLIMB_AUDIO, DEFAULT_HINT, INTRO_MUSIC, INTRO_MUSIC_VOLUME, TITLE } from './story.js'
+import { BEATS, CLIMB_AUDIO, DEFAULT_HINT, TITLE } from './story.js'
 
 // The ride up Monserrate. A title card, then one gondola clip per beat: the
 // clip plays, freezes on its last frame, its line of text fades in, and space
@@ -43,38 +43,6 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
     gsap.set(titleRef.current, { xPercent: -50 })
   }, [])
 
-  // Shakira over the title card and the whole climb. It lives and dies with
-  // this component, so the game that comes after it is never scored by it.
-  useEffect(() => {
-    if (!INTRO_MUSIC) return
-    const audio = new Audio(INTRO_MUSIC)
-    audio.loop = true
-    audio.volume = INTRO_MUSIC_VOLUME
-    audio.muted = mutedRef.current
-    musicRef.current = audio
-
-    // Autoplay before the player has touched the page is usually refused, so
-    // the first key or click on the title card is the fallback trigger.
-    const stopWaiting = () => {
-      window.removeEventListener('keydown', start)
-      window.removeEventListener('pointerdown', start)
-    }
-    function start() {
-      audio.play().then(stopWaiting).catch(() => {})
-    }
-    start()
-    window.addEventListener('keydown', start)
-    window.addEventListener('pointerdown', start)
-
-    return () => {
-      stopWaiting()
-      gsap.killTweensOf(audio)
-      audio.pause()
-      audio.src = ''
-      musicRef.current = null
-    }
-  }, [])
-
   // Fade each line in as it arrives.
   useLayoutEffect(() => {
     if (!showText || !copyRef.current) return
@@ -92,27 +60,12 @@ function Intro({ playerName, onPlayerNameChange, onComplete }) {
     )
   }, [index, showText, reduced])
 
-  // Take the music down with the picture. duration 0 cuts it dead.
-  const stopMusic = useCallback((duration) => {
-    const audio = musicRef.current
-    if (!audio) return
-    if (!duration) {
-      audio.pause()
-      return
-    }
-    gsap.to(audio, {
-      volume: 0,
-      duration,
-      ease: 'power1.in',
-      onComplete: () => audio.pause(),
-    })
-  }, [])
-
-  // Mute rather than pause: the track keeps its place, and the fade-outs in
-  // stopMusic still run against volume without fighting this.
+  // Mute is currently a no-op stub: the ambient track this used to control
+  // now lives in App (see the comment in finish() below), and App doesn't
+  // yet expose a way for Intro to reach it. Kept so the 'M' hotkey and the
+  // hint text stay intact for whenever that wiring lands.
   const toggleMute = useCallback(() => {
     mutedRef.current = !mutedRef.current
-    if (musicRef.current) musicRef.current.muted = mutedRef.current
   }, [])
 
   const finish = useCallback(() => {
