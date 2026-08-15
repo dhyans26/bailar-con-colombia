@@ -211,7 +211,6 @@ function App() {
                 prediction={prediction}
                 health={health}
                 playerName={playerName}
-                onPlayerNameChange={setPlayerName}
               />
             )}
             {view === 'leaderboard' && <Leaderboard refreshSignal={0} />}
