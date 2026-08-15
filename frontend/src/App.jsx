@@ -1,10 +1,11 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import EmpanadaAvatar from './EmpanadaAvatar.jsx'
 import SalsaGame from './SalsaGame.jsx'
 import Intro from './Intro.jsx'
 import SummitScene from './SummitScene.jsx'
 import Leaderboard from './Leaderboard.jsx'
+import { INTRO_MUSIC, INTRO_MUSIC_VOLUME } from './story.js'
 
 const API_BASE = 'http://127.0.0.1:8000'
 const WS_URL = 'ws://127.0.0.1:8000/ws/state'
@@ -100,7 +101,12 @@ function App() {
   const [pose, setPose] = useState(null)
   const [prediction, setPrediction] = useState(null)
   const [error, setError] = useState(null)
+  // True while a round is actually being danced -- shakira stands down then.
+  const [gameActive, setGameActive] = useState(false)
   const stageRef = useRef(null)
+  const lobbyMusicRef = useRef(null)
+
+  const handleGameActiveChange = useCallback((active) => setGameActive(active), [])
 
   useEffect(() => {
     let cancelled = false
@@ -163,6 +169,54 @@ function App() {
     }
   }, [])
 
+  // Shakira is the ambient track for everything outside a live game: the intro,
+  // the lobby, the finished screen, the leaderboard. It hands over to the
+  // game-music track the instant a game goes live and comes back when it ends,
+  // so the player is never stuck in silence.
+  useEffect(() => {
+    if (!INTRO_MUSIC) return
+    const audio = new Audio(INTRO_MUSIC)
+    audio.loop = true
+    audio.volume = INTRO_MUSIC_VOLUME
+    lobbyMusicRef.current = audio
+
+    // Autoplay before the player has touched the page is usually refused, so
+    // the first key or click anywhere is the fallback trigger.
+    const stopWaiting = () => {
+      window.removeEventListener('keydown', start)
+      window.removeEventListener('pointerdown', start)
+    }
+    function start() {
+      audio.play().then(stopWaiting).catch(() => {})
+    }
+    start()
+    window.addEventListener('keydown', start)
+    window.addEventListener('pointerdown', start)
+
+    return () => {
+      stopWaiting()
+      audio.pause()
+      audio.src = ''
+      lobbyMusicRef.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    const audio = lobbyMusicRef.current
+    if (!audio) return
+    if (gameActive) {
+      audio.pause()
+    } else if (audio.paused) {
+      audio.play().catch(() => {})
+    }
+  }, [gameActive])
+
+  // Leaving the game view abandons any in-progress round, so hand the ambient
+  // track back over instead of leaving the player in silence.
+  useEffect(() => {
+    if (view !== 'game') setGameActive(false)
+  }, [view])
+
   // The summit is already sitting behind the intro, so arriving at the game is
   // just the panel coming up on top of it.
   useLayoutEffect(() => {
@@ -211,6 +265,7 @@ function App() {
                 prediction={prediction}
                 health={health}
                 playerName={playerName}
+                onGameActiveChange={handleGameActiveChange}
               />
             )}
             {view === 'leaderboard' && <Leaderboard refreshSignal={0} />}

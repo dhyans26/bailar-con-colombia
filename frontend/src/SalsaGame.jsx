@@ -6,6 +6,19 @@ const ROUNDS_PER_GAME = 5
 const READY_MS = 2000
 const PERFORM_MS = 4000
 
+// One entry per track in public/game-music -- each game starts with a random
+// pick, so dropping a new song in the folder means adding it to this list too.
+const GAME_MUSIC_TRACKS = [
+  encodeURI('/game-music/La Vida Es Un Carnaval - Celia Cruz [0nBFWzpWXuM].opus'),
+  encodeURI('/game-music/markanthony.mp3'),
+]
+
+const GAME_MUSIC_VOLUME = 0.55
+
+function pickTrack() {
+  return GAME_MUSIC_TRACKS[Math.floor(Math.random() * GAME_MUSIC_TRACKS.length)]
+}
+
 // "idle" is the model's do-nothing/rest class, not a move to call out and
 // score against -- every other trained label is fair game. New labels
 // recorded via dataset_recorder.py + train_lstm.py show up automatically.
@@ -25,7 +38,7 @@ function pickTarget(moves, avoid) {
   return options[Math.floor(Math.random() * options.length)]
 }
 
-function SalsaGame({ pose, prediction, health, playerName }) {
+function SalsaGame({ pose, prediction, health, playerName, onGameActiveChange }) {
   const [phase, setPhase] = useState('lobby') // lobby | ready | perform | finished
   const [round, setRound] = useState(0)
   const [target, setTarget] = useState(null)
@@ -33,6 +46,10 @@ function SalsaGame({ pose, prediction, health, playerName }) {
   const [submitState, setSubmitState] = useState('idle') // idle | saving | done | error
   const maxProbRef = useRef(0)
   const submittedRef = useRef(false)
+  const musicRef = useRef(null)
+  const prevPhaseRef = useRef(phase)
+  const trackRef = useRef(null)
+  const lastTrackRef = useRef(null)
 
   const moves = playableMoves(health && health.labels)
 
@@ -42,6 +59,7 @@ function SalsaGame({ pose, prediction, health, playerName }) {
     submittedRef.current = false
     setRound(0)
     setTarget(pickTarget(moves, null))
+    trackRef.current = pickTrack()
     setPhase('ready')
   }
 
@@ -51,6 +69,44 @@ function SalsaGame({ pose, prediction, health, playerName }) {
     const id = setTimeout(() => setPhase('perform'), READY_MS)
     return () => clearTimeout(id)
   }, [phase])
+
+  // Game music from public/game-music: it only plays while a round is live
+  // (ready/perform), starts a fresh random track each time a game begins, and
+  // never plays on the lobby, the finished screen, or any other view. The
+  // ambient track in App stands down while this is going.
+  useEffect(() => {
+    const audio = new Audio()
+    audio.loop = true
+    audio.volume = GAME_MUSIC_VOLUME
+    musicRef.current = audio
+    return () => {
+      audio.pause()
+      audio.src = ''
+      musicRef.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    const audio = musicRef.current
+    if (!audio) return
+    const inPlay = phase === 'ready' || phase === 'perform'
+    const wasInPlay = prevPhaseRef.current === 'ready' || prevPhaseRef.current === 'perform'
+    prevPhaseRef.current = phase
+    onGameActiveChange(inPlay)
+    if (inPlay) {
+      if (!wasInPlay && trackRef.current) {
+        if (lastTrackRef.current !== trackRef.current) {
+          lastTrackRef.current = trackRef.current
+          audio.src = trackRef.current
+          audio.load()
+        }
+        audio.currentTime = 0
+      }
+      audio.play().catch(() => {})
+    } else {
+      audio.pause()
+    }
+  }, [phase, onGameActiveChange])
 
   // perform window: reset the tracker, then score whatever was captured
   useEffect(() => {
