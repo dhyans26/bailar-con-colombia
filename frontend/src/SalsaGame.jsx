@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { supabase } from './supabaseClient.js'
 
 const ROUNDS_PER_GAME = 5
@@ -30,6 +31,9 @@ const POINTS_PER_STAR = 100
 // A live star meter: fills up as you dance instead of only revealing the
 // score at the end of a round, so there's something to react to in the
 // moment. `score` can include an in-progress round's live-tracked estimate.
+// Stacked vertically (bottom star fills first, like a level rising) so it
+// reads at a glance from across the room instead of needing to be read
+// left-to-right.
 function DanceMeter({ score, maxScore }) {
   const totalStars = maxScore / POINTS_PER_STAR
   const starsEarned = Math.max(0, Math.min(totalStars, score / POINTS_PER_STAR))
@@ -40,13 +44,14 @@ function DanceMeter({ score, maxScore }) {
       role="img"
       aria-label={`${score} of ${maxScore} points, ${starsEarned.toFixed(1)} of ${totalStars} stars`}
     >
+      <p className="dance-meter__label">Just Dance Meter</p>
       <div className="dance-meter__stars" aria-hidden="true">
         {Array.from({ length: totalStars }).map((_, i) => {
           const fill = Math.max(0, Math.min(1, starsEarned - i)) * 100
           return (
             <span className="dance-meter__star" key={i}>
               <span className="dance-meter__star-outline">★</span>
-              <span className="dance-meter__star-fill" style={{ width: `${fill}%` }}>
+              <span className="dance-meter__star-fill" style={{ height: `${fill}%` }}>
                 ★
               </span>
             </span>
@@ -54,9 +59,30 @@ function DanceMeter({ score, maxScore }) {
         })}
       </div>
       <p className="dance-meter__score">
-        {score} / {maxScore} pts
+        {score} / {maxScore}
       </p>
     </div>
+  )
+}
+
+// The move to nail this round, blown up to fill the whole screen -- portalled
+// straight to <body> so it escapes the boxed side panel (whose backdrop-filter
+// would otherwise clip a position:fixed overlay to its own small width) and
+// is actually readable from a few feet back, mid-dance.
+function DanceCallout({ phase, round, target, poseDetected, liveScore, maxScore }) {
+  return createPortal(
+    <div className="dance-callout">
+      <p className="dance-callout__round">
+        round {round + 1} / {ROUNDS_PER_GAME}
+      </p>
+      <p className="dance-callout__go">{phase === 'ready' ? 'get ready...' : 'GO!'}</p>
+      <p className="dance-callout__move">{displayName(target)}</p>
+      {!poseDetected && <p className="dance-callout__warning">step into frame!</p>}
+      <div className="dance-callout__meter">
+        <DanceMeter score={liveScore} maxScore={maxScore} />
+      </div>
+    </div>,
+    document.body,
   )
 }
 
@@ -178,21 +204,22 @@ function SalsaGame({ pose, prediction, health, playerName }) {
       )}
 
       {(phase === 'ready' || phase === 'perform') && (
-        <div>
-          <p>
-            round {round + 1} / {ROUNDS_PER_GAME}
-          </p>
-          <h2>{phase === 'ready' ? 'get ready...' : 'GO!'}</h2>
-          <h2>{displayName(target)}</h2>
-          {!(pose && pose.person_detected) && <p>step into frame!</p>}
-          <DanceMeter score={liveScore} maxScore={maxScore} />
-        </div>
+        <DanceCallout
+          phase={phase}
+          round={round}
+          target={target}
+          poseDetected={Boolean(pose && pose.person_detected)}
+          liveScore={liveScore}
+          maxScore={maxScore}
+        />
       )}
 
       {phase === 'finished' && (
         <div>
-          <h2>final score: {totalScore} / {maxScore}</h2>
-          <DanceMeter score={totalScore} maxScore={maxScore} />
+          <div className="finished-summary">
+            <h2>final score: {totalScore} / {maxScore}</h2>
+            <DanceMeter score={totalScore} maxScore={maxScore} />
+          </div>
           <table border="1" cellPadding="4">
             <thead>
               <tr>

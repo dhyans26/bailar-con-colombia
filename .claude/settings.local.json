@@ -66,7 +66,9 @@
       "Bash(lsof -ti:5176 -sTCP:LISTEN)",
       "Bash(npx eslint *)",
       "Bash(node scale-shot.mjs)",
-      "Bash(lsof -ti:5177 -sTCP:LISTEN)"
+      "Bash(lsof -ti:5177 -sTCP:LISTEN)",
+      "Bash(git status *)",
+      "Bash(git commit *)"
     ],
     "additionalDirectories": [
       "/Users/vedpatel/code/Macondo",
