@@ -15,6 +15,47 @@ FEATURE_DIM = POS_DIM * 2       # 48 (position + velocity)
 
 DEFAULT_SEQ_LEN = 40
 
+# Index permutation that swaps each left/right keypoint pair, for mirroring
+# a raw (17, 2) frame left-to-right (nose maps to itself).
+_LR_SWAP = [0, 2, 1, 4, 3, 6, 5, 8, 7, 10, 9, 12, 11, 14, 13, 16, 15]
+
+
+def mirror_frame(kpts_xy: np.ndarray) -> np.ndarray:
+    """Left-right flip a raw (17, 2) keypoint frame: swap L/R joints and
+    negate x. Used for training-time augmentation -- doubles the effective
+    dataset for moves that aren't inherently left/right-asymmetric, and is
+    invariant to the hip-centering/scaling done in normalize_frame."""
+    mirrored = kpts_xy[_LR_SWAP].copy()
+    mirrored[:, 0] *= -1
+    return mirrored
+
+
+def augment_clip(frames_kpts_xy: List[np.ndarray], rng: np.random.Generator,
+                  mirror_prob: float = 0.5, min_keep_frac: float = 0.75) -> List[np.ndarray]:
+    """Randomly mirror and/or time-crop a clip's raw keypoint frames.
+    Cropping to a random contiguous sub-range (then relying on
+    resample_sequence to stretch it back to seq_len) simulates the move
+    being performed slightly faster/slower or starting a beat later."""
+    frames = frames_kpts_xy
+    if rng.random() < mirror_prob:
+        frames = [mirror_frame(f) for f in frames]
+    n = len(frames)
+    if n > 4:
+        keep_n = max(4, int(round(n * rng.uniform(min_keep_frac, 1.0))))
+        start = int(rng.integers(0, n - keep_n + 1))
+        frames = frames[start:start + keep_n]
+    return frames
+
+
+def jitter_features(feats: np.ndarray, rng: np.random.Generator, std: float = 0.03) -> np.ndarray:
+    """Add small Gaussian noise to a clip's normalized joint positions
+    (post clip_to_features) and recompute velocity to match, so the noise
+    is reflected consistently in both halves of the feature vector."""
+    positions = feats[:, :POS_DIM] + rng.normal(0.0, std, size=(feats.shape[0], POS_DIM)).astype(np.float32)
+    velocity = np.zeros_like(positions)
+    velocity[1:] = positions[1:] - positions[:-1]
+    return np.concatenate([positions, velocity], axis=1).astype(np.float32)
+
 
 def normalize_frame(kpts_xy: np.ndarray) -> np.ndarray:
     """Center on hip midpoint, scale by torso length. kpts_xy: (17, 2)."""

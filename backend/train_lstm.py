@@ -5,19 +5,21 @@ from pathlib import Path
 import numpy as np
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader, Dataset, TensorDataset
 
-from lstm_model import DEFAULT_SEQ_LEN, FEATURE_DIM, ModelConfig, MoveLSTM, clip_to_features
+from lstm_model import (DEFAULT_SEQ_LEN, FEATURE_DIM, ModelConfig, MoveLSTM,
+                         augment_clip, clip_to_features, jitter_features)
 
 DATASET_DIR = Path(__file__).resolve().parent / "dataset"
 MODEL_DIR = Path(__file__).resolve().parent / "model"
 DEFAULT_OUT = MODEL_DIR / "lstm_move_classifier.pt"
 
 
-def load_dataset(dataset_dir: Path, seq_len: int):
-    """Return (X, y, label_names). X: (N, seq_len, FEATURE_DIM) float32,
-    y: (N,) int64 class indices, label_names: sorted list of move names
-    (index order matches y)."""
+def load_dataset(dataset_dir: Path):
+    """Return (clips, y, label_names). clips: list of per-clip lists of raw
+    (17, 2) keypoint frames (kept unfeaturized so training-time augmentation
+    can still mirror/crop the original frames), y: (N,) int64 class indices,
+    label_names: sorted list of move names (index order matches y)."""
     move_dirs = sorted(p for p in dataset_dir.iterdir() if p.is_dir())
     if not move_dirs:
         raise RuntimeError(
@@ -25,7 +27,7 @@ def load_dataset(dataset_dir: Path, seq_len: int):
             f"dataset_recorder.py first.")
 
     label_names = [d.name for d in move_dirs]
-    X, y = [], []
+    clips, y = [], []
     counts = {}
 
     for label_idx, move_dir in enumerate(move_dirs):
@@ -39,7 +41,7 @@ def load_dataset(dataset_dir: Path, seq_len: int):
                 print(f"skipping {path} -- only {len(frames)} frame(s)")
                 continue
             kpts_seq = [np.array(fr["kpts_xy"], dtype=np.float32) for fr in frames]
-            X.append(clip_to_features(kpts_seq, seq_len))
+            clips.append(kpts_seq)
             y.append(label_idx)
 
     print("dataset loaded:")
@@ -47,10 +49,47 @@ def load_dataset(dataset_dir: Path, seq_len: int):
         flag = "  <- fewer than 5, will skip validation split for this class" if count < 5 else ""
         print(f"  {name}: {count} take(s){flag}")
 
-    if not X:
+    if not clips:
         raise RuntimeError("no usable clips found (all had < 2 frames)")
 
-    return np.stack(X).astype(np.float32), np.array(y, dtype=np.int64), label_names
+    return clips, np.array(y, dtype=np.int64), label_names
+
+
+def features_for_clips(clips, seq_len: int) -> np.ndarray:
+    return np.stack([clip_to_features(c, seq_len) for c in clips]).astype(np.float32)
+
+
+class ClipDataset(Dataset):
+    """Wraps raw per-frame keypoint clips + labels and featurizes them
+    lazily. With augment=True, each fetch re-rolls a random mirror/time-crop
+    of the raw frames plus small position jitter, so the model sees a
+    different perturbation of every clip each epoch instead of memorizing
+    the exact recorded sequence -- the main lever against overfitting on a
+    dataset this small."""
+
+    def __init__(self, clips, labels, seq_len, mean, std, augment: bool,
+                 jitter_std: float = 0.03, seed: int = 0):
+        self.clips = clips
+        self.labels = labels
+        self.seq_len = seq_len
+        self.mean = mean
+        self.std = std
+        self.augment = augment
+        self.jitter_std = jitter_std
+        self.rng = np.random.default_rng(seed)
+
+    def __len__(self):
+        return len(self.clips)
+
+    def __getitem__(self, idx):
+        frames = self.clips[idx]
+        if self.augment:
+            frames = augment_clip(frames, self.rng)
+        feats = clip_to_features(frames, self.seq_len)
+        if self.augment:
+            feats = jitter_features(feats, self.rng, std=self.jitter_std)
+        feats = (feats - self.mean) / self.std
+        return torch.from_numpy(feats.astype(np.float32)), torch.tensor(self.labels[idx], dtype=torch.int64)
 
 
 def stratified_split(y: np.ndarray, val_frac: float, seed: int):
@@ -111,36 +150,48 @@ def main():
     parser.add_argument("--epochs", type=int, default=150)
     parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--lr", type=float, default=1e-3)
-    parser.add_argument("--weight-decay", type=float, default=1e-4)
+    parser.add_argument("--weight-decay", type=float, default=1e-3)
     parser.add_argument("--val-split", type=float, default=0.2)
     parser.add_argument("--patience", type=int, default=25,
-                         help="stop if val accuracy doesn't improve for this many epochs")
+                         help="stop if val loss doesn't improve for this many epochs")
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--no-augment", action="store_true",
+                         help="disable training-time mirror/time-crop/jitter augmentation")
+    parser.add_argument("--jitter-std", type=float, default=0.03,
+                         help="std of gaussian noise added to normalized joint positions "
+                              "when augmenting (ignored with --no-augment)")
     args = parser.parse_args()
 
     torch.manual_seed(args.seed)
 
-    X, y, label_names = load_dataset(args.dataset_dir, args.seq_len)
+    clips, y, label_names = load_dataset(args.dataset_dir)
     if len(label_names) < 2:
         raise RuntimeError("need at least 2 move classes to train a classifier")
 
     train_idx, val_idx = stratified_split(y, args.val_split, args.seed)
-    print(f"train: {len(train_idx)} clips, val: {len(val_idx)} clips")
+    print(f"train: {len(train_idx)} clips, val: {len(val_idx)} clips"
+          f"{'' if args.no_augment else ' (augmented)'}")
 
-    X_train, mean, std = normalize_features(X[train_idx])
+    train_clips = [clips[i] for i in train_idx]
+    val_clips = [clips[i] for i in val_idx]
+
+    # normalization stats always come from the un-augmented features, so
+    # they don't drift with whatever a given epoch's random jitter/crop did
+    _, mean, std = normalize_features(features_for_clips(train_clips, args.seq_len))
     if len(val_idx):
-        X_val, _, _ = normalize_features(X[val_idx], mean, std)
+        X_val, _, _ = normalize_features(features_for_clips(val_clips, args.seq_len), mean, std)
     else:
-        X_val = np.zeros((0, X.shape[1], X.shape[2]), dtype=np.float32)
+        X_val = np.zeros((0, args.seq_len, FEATURE_DIM), dtype=np.float32)
 
     # inverse-frequency class weights to counter stupid inbalance across the model
     class_counts = np.bincount(y[train_idx], minlength=len(label_names))
     class_weights = torch.tensor(
         class_counts.sum() / np.maximum(class_counts, 1), dtype=torch.float32)
 
-    train_loader = DataLoader(
-        TensorDataset(torch.from_numpy(X_train), torch.from_numpy(y[train_idx])),
-        batch_size=args.batch_size, shuffle=True)
+    train_dataset = ClipDataset(
+        train_clips, y[train_idx], args.seq_len, mean, std,
+        augment=not args.no_augment, jitter_std=args.jitter_std, seed=args.seed)
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
 
     val_loader = None
     if len(val_idx):
@@ -156,9 +207,13 @@ def main():
                        num_classes=len(label_names), seq_len=args.seq_len,
                        label_names=label_names)
     model = MoveLSTM(cfg)
-    criterion = nn.CrossEntropyLoss(weight=class_weights)
+    # label smoothing keeps the model from driving softmax probabilities to
+    # ~1.0 on training examples, which is the main source of overconfident
+    # (and often wrong) predictions at inference time on a small dataset.
+    criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=0.1)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
+    best_val_loss = float("inf")
     best_val_acc = -1.0
     best_state = None
     epochs_without_improvement = 0
@@ -170,7 +225,12 @@ def main():
             val_loss, val_acc = run_epoch(model, val_loader, criterion)
             print(f"epoch {epoch:3d}  train loss={train_loss:.3f} acc={train_acc:.2f}  "
                   f"val loss={val_loss:.3f} acc={val_acc:.2f}")
-            if val_acc > best_val_acc:
+            # checkpoint on val loss rather than val accuracy: loss keeps
+            # falling only while predictions are both correct AND
+            # well-calibrated, whereas accuracy is blind to a model that's
+            # right but wildly overconfident (or increasingly so).
+            if val_loss < best_val_loss:
+                best_val_loss = val_loss
                 best_val_acc = val_acc
                 best_state = {k: v.clone() for k, v in model.state_dict().items()}
                 epochs_without_improvement = 0

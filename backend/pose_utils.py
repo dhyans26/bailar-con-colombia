@@ -46,7 +46,55 @@ def load_model() -> YOLO:
     return model
 
 
-def open_camera(index: int = 0) -> cv2.VideoCapture:
+# A virtual camera (OBS, Camo, NDI) registers a system extension that sits in
+# the same index space as the built-in webcam, and OpenCV exposes cameras by
+# index only -- there is no way to ask AVFoundation for "the real one" by name
+# and get an index back (its device order does not even match OpenCV's). An
+# idle virtual camera does give itself away, though: it serves one fixed
+# placeholder image, so every frame is byte-identical, where a real sensor's
+# frames always differ by at least noise. That is what the scan below looks
+# for.
+AUTO_CAMERA_INDEX = -1
+_PROBE_FRAMES = 8
+_PROBE_MAX_INDEX = 4
+# Sensor noise clears this comfortably; a repeated still image scores 0.0.
+_LIVE_FRAME_DIFF = 0.05
+
+
+def _frames_vary(cap: cv2.VideoCapture) -> bool:
+    first = None
+    for _ in range(_PROBE_FRAMES):
+        ok, frame = cap.read()
+        if not ok:
+            continue
+        if first is None:
+            first = frame
+        elif float(cv2.absdiff(first, frame).mean()) > _LIVE_FRAME_DIFF:
+            return True
+    return False
+
+
+def resolve_camera_index() -> int:
+    """Lowest camera index that is a live sensor rather than an idle virtual
+    camera. Falls back to the first index that opens at all."""
+    fallback = None
+    for index in range(_PROBE_MAX_INDEX):
+        cap = cv2.VideoCapture(index, cv2.CAP_AVFOUNDATION)
+        try:
+            if not cap.isOpened():
+                break  # indices are contiguous, so the first gap is the end
+            if fallback is None:
+                fallback = index
+            if _frames_vary(cap):
+                return index
+        finally:
+            cap.release()
+    return fallback if fallback is not None else 0
+
+
+def open_camera(index: int = AUTO_CAMERA_INDEX) -> cv2.VideoCapture:
+    if index < 0:
+        index = resolve_camera_index()
     return cv2.VideoCapture(index, cv2.CAP_AVFOUNDATION)
 
 

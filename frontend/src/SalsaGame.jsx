@@ -100,7 +100,7 @@ function DanceCallout({ phase, round, target, poseDetected, liveScore, maxScore 
   )
 }
 
-function SalsaGame({ pose, prediction, health, playerName, onGameActiveChange, onReturnToMenu }) {
+function SalsaGame({ pose, prediction, health, playerName, onGameActiveChange, onReturnToMenu, muted = false }) {
   const [phase, setPhase] = useState('lobby') // lobby | ready | perform | finished
   const [round, setRound] = useState(0)
   const [target, setTarget] = useState(null)
@@ -116,11 +116,10 @@ function SalsaGame({ pose, prediction, health, playerName, onGameActiveChange, o
   const prevPhaseRef = useRef(phase)
   const trackRef = useRef(null)
   const lastTrackRef = useRef(null)
-  // Mirrors the mute pattern in Intro.jsx -- this file never had a mutedRef
-  // of its own even though the game-music effect below reads one, which
-  // threw a ReferenceError the instant a round started. No mute control is
-  // wired up on this screen yet, so it just defaults to unmuted.
-  const mutedRef = useRef(false)
+  // App owns the mute flag (the M hotkey lives there, since it is the only
+  // place that can see every track at once) and hands it down; the ref mirror
+  // is for the setup effect, which must not re-run when it flips.
+  const mutedRef = useRef(muted)
 
   const moves = playableMoves(health && health.labels)
 
@@ -157,6 +156,11 @@ function SalsaGame({ pose, prediction, health, playerName, onGameActiveChange, o
       musicRef.current = null
     }
   }, [])
+
+  useEffect(() => {
+    mutedRef.current = muted
+    if (musicRef.current) musicRef.current.muted = muted
+  }, [muted])
 
   useEffect(() => {
     const audio = musicRef.current

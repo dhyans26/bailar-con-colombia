@@ -100,8 +100,11 @@ function App() {
   const [error, setError] = useState(null)
   // True while a round is actually being danced -- shakira stands down then.
   const [gameActive, setGameActive] = useState(false)
+  const [muted, setMuted] = useState(false)
   const stageRef = useRef(null)
   const lobbyMusicRef = useRef(null)
+  // Mirror of `muted` for effects that must not re-run when it flips.
+  const mutedRef = useRef(false)
 
   const handleGameActiveChange = useCallback((active) => setGameActive(active), [])
 
@@ -175,6 +178,7 @@ function App() {
     const audio = new Audio(INTRO_MUSIC)
     audio.loop = true
     audio.volume = INTRO_MUSIC_VOLUME
+    audio.muted = mutedRef.current
     lobbyMusicRef.current = audio
 
     // Autoplay before the player has touched the page is usually refused, so
@@ -208,6 +212,31 @@ function App() {
     }
   }, [gameActive])
 
+  // M kills every sound at once. Undocumented on purpose -- it is deliberately
+  // absent from the hints and the UI. It lives up here because App is the only
+  // place that can see all of it: the ambient track it owns, the game music in
+  // SalsaGame, and the climb clips in Intro, the last two via the `muted` prop.
+  // Mute rather than pause, so a track keeps its place while silenced.
+  useEffect(() => {
+    mutedRef.current = muted
+    if (lobbyMusicRef.current) lobbyMusicRef.current.muted = muted
+  }, [muted])
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key !== 'm' && e.key !== 'M') return
+      // Modifiers excluded so this never steals Cmd+M and friends, and text
+      // fields excluded so typing an "m" into the name prompt is just an "m".
+      if (e.metaKey || e.ctrlKey || e.altKey) return
+      const tag = e.target?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) return
+      e.preventDefault()
+      setMuted((m) => !m)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
   // Leaving the game view abandons any in-progress round, so hand the ambient
   // track back over instead of leaving the player in silence.
   useEffect(() => {
@@ -236,13 +265,14 @@ function App() {
           playerName={playerName}
           onPlayerNameChange={setPlayerName}
           onComplete={() => setStage('game')}
+          muted={muted}
         />
       )}
 
       {stage === 'game' && (
         <>
           <div className="stage" ref={stageRef}>
-            <div className="stage__panel">
+            <div className={`stage__panel${gameActive ? ' stage__panel--playing' : ''}`}>
               {error && <p>cannot reach backend at {API_BASE}: {error}</p>}
 
               {view === 'game' && (
@@ -256,6 +286,7 @@ function App() {
                     setPlayerName('')
                     setStage('intro')
                   }}
+                  muted={muted}
                 />
               )}
               {view === 'monitor' && (
