@@ -1,22 +1,3 @@
-"""LSTM model + shared preprocessing for the salsa move classifier.
-
-Preprocessing turns a raw recorded clip (variable-length sequence of the
-17 COCO keypoints saved by dataset_recorder.py) into a fixed-length,
-translation/scale-normalized feature sequence suitable for the LSTM:
-  1. drop the 5 face keypoints (irrelevant to dance moves) -> 12 body joints
-  2. center each frame on the hip midpoint and scale by torso length
-     (matches the pose_utils/features.py convention -- removes how
-     far/where you're standing from the camera as a nuisance variable)
-  3. resample to a fixed number of frames via linear interpolation in time
-     (clips are recorded at varying lengths/fps; what matters is the shape
-     of the motion, not its absolute duration)
-  4. append frame-to-frame velocity alongside position
-
-This module is imported by both train_lstm.py (offline training) and,
-later, the live inference script -- so preprocessing is guaranteed
-identical between training and inference.
-"""
-
 from dataclasses import dataclass, field
 from typing import List
 
@@ -76,7 +57,7 @@ def clip_to_features(frames_kpts_xy: List[np.ndarray], seq_len: int = DEFAULT_SE
 @dataclass
 class ModelConfig:
     input_dim: int = FEATURE_DIM
-    hidden_dim: int = 64
+    hidden_dim: int = 64 
     num_layers: int = 1
     bidirectional: bool = False
     dropout: float = 0.4
@@ -85,11 +66,7 @@ class ModelConfig:
     label_names: List[str] = field(default_factory=list)
 
 
-class MoveLSTM(nn.Module):
-    """Small LSTM classifier: sized for tens-to-low-hundreds of takes per
-    class, not a large dataset -- keep hidden_dim/num_layers small and
-    lean on dropout rather than making this bigger."""
-
+class MoveLSTM(nn.Module): # model for small datasets (0-100 per class)
     def __init__(self, cfg: ModelConfig):
         super().__init__()
         self.cfg = cfg

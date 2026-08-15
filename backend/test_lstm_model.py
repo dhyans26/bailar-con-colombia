@@ -1,16 +1,4 @@
-"""Live test harness for a trained LSTM move classifier (see train_lstm.py).
-
-Loads a checkpoint saved by train_lstm.py and runs it continuously against
-a rolling window of your live webcam pose, showing the predicted move plus
-every class's probability on screen -- useful for sanity-checking the
-model (and spotting confused/overlapping classes) before wiring it into
-the actual app.
-
-Run:
-    python backend/test_lstm_model.py
-    python backend/test_lstm_model.py --model backend/model/lstm_move_classifier.pt --camera 1
-Press 'q' to quit.
-"""
+# test window to check lstm model predictions
 
 import argparse
 from collections import deque

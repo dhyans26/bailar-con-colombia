@@ -1,25 +1,7 @@
-"""Interactive dataset recorder for building labeled move-sequence data to
-train an LSTM classifier later.
-
-Type a move name directly into the window (letters, digits, '_', '-' --
-other characters are ignored), then SPACE (or click the button) to
-start/stop recording a take under that label. Every stop saves a new
-numbered sample to backend/dataset/<move_name>/<NNN>.json -- takes
-accumulate, nothing gets overwritten, so you can record as many examples
-of as many moves as you want in one session, just by retyping the label
-between takes.
-
-Controls (all shown on-screen too):
-  letters / digits / - / _   edit the current label (only while not recording)
-  Backspace                  delete last character of the label
-  SPACE  or click the button start/stop recording a take
-  u                          undo -- delete the most recently saved take for the current label
-  q                          quit (auto-stops + saves first if still recording)
-
-Run:
-    python backend/dataset_recorder.py
-    python backend/dataset_recorder.py --camera 1
-"""
+# dataset recorder
+# space to pause/start recording
+# type in the class
+# misc data on the bottom left
 
 import argparse
 import json

@@ -1,16 +1,3 @@
-"""Train the LSTM move classifier on backend/dataset/<move>/*.json takes
-recorded by dataset_recorder.py.
-
-Run:
-    python backend/train_lstm.py
-    python backend/train_lstm.py --epochs 150 --hidden-dim 32
-
-Saves the best checkpoint (by validation accuracy) to
-backend/model/lstm_move_classifier.pt, containing the model weights,
-label list, feature normalization stats, and architecture config needed
-to reload the model for inference later.
-"""
-    
 import argparse
 import json
 from pathlib import Path
@@ -146,7 +133,7 @@ def main():
     else:
         X_val = np.zeros((0, X.shape[1], X.shape[2]), dtype=np.float32)
 
-    # Inverse-frequency class weights to counter imbalance across move labels.
+    # inverse-frequency class weights to counter stupid inbalance across the model
     class_counts = np.bincount(y[train_idx], minlength=len(label_names))
     class_weights = torch.tensor(
         class_counts.sum() / np.maximum(class_counts, 1), dtype=torch.float32)

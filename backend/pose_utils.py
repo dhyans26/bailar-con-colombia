@@ -1,9 +1,5 @@
-"""Shared pose-estimation helpers: model loading, camera access, keypoint
-extraction, and skeleton drawing.
+#utils
 
-Used by every Salsa Buddy script. The existing pos_estimation.py demo is
-left untouched and doesn't depend on this module.
-"""
 
 from pathlib import Path
 
