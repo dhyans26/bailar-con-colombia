@@ -55,7 +55,7 @@ body {
   position: absolute;
   left: -2%;
   width: 104%;
-  bottom: 33vh;
+  bottom: 19vh;
   height: 11vh;
   color: #4a6b8c;
   opacity: 0.45;
@@ -64,9 +64,9 @@ body {
 
 .scene__church {
   position: absolute;
-  bottom: 28vh;
+  bottom: 14vh;
   left: 26%;
-  height: 68vh;
+  height: 76vh;
   width: auto;
   max-width: 96vw;
   object-fit: contain;
@@ -79,45 +79,34 @@ body {
 
 .scene__church-shadow {
   position: absolute;
-  bottom: 26vh;
+  bottom: 12vh;
   left: 26%;
-  width: 70vh;
-  height: 9vh;
+  width: 78vh;
+  height: 10vh;
   transform: translateX(-50%);
   background: radial-gradient(ellipse at center, rgba(24, 34, 16, 0.38), transparent 66%);
   pointer-events: none;
 }
 
-/* the empanada mascot, two-stepping in the background off to the right of
-   the church -- purely decorative, no pose tracking involved */
+/* the empanada mascot, off to the right of the church in the background --
+   this wraps the same live pose-tracking avatar shown in-game, so it mirrors
+   your moves; with nobody in frame it just sits on its fallback idle pose. */
 .scene__dancer {
   position: absolute;
-  bottom: 29vh;
+  /* the avatar's viewBox has a lot of empty space below its feet (room for
+     the legs' fallback swing), so this sits well below the ground line to
+     bring the actual feet down onto the grass instead of floating above it */
+  bottom: 6vh;
   left: 68%;
-  height: 30vh;
-  width: auto;
-  object-fit: contain;
-  object-position: bottom;
-  transform-origin: 50% 100%;
+  transform: translateX(-50%);
   pointer-events: none;
-  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.3));
-  animation: empanada-dance 2.2s ease-in-out infinite;
 }
 
-@keyframes empanada-dance {
-  0%,
-  100% {
-    transform: translateX(-50%) rotate(-6deg) translateY(0);
-  }
-  25% {
-    transform: translateX(-50%) rotate(0deg) translateY(-2%);
-  }
-  50% {
-    transform: translateX(-50%) rotate(6deg) translateY(0);
-  }
-  75% {
-    transform: translateX(-50%) rotate(0deg) translateY(-2%);
-  }
+.scene__dancer svg {
+  display: block;
+  height: 38vh;
+  width: auto;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.3));
 }
 
 /* thin air sitting on the summit, so sky and ground do not butt up hard */
@@ -125,7 +114,7 @@ body {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 32vh;
+  bottom: 18vh;
   height: 10vh;
   background: linear-gradient(to top, rgba(219, 233, 247, 0.55), transparent);
   pointer-events: none;
@@ -137,7 +126,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 34vh;
+  height: 20vh;
   background:
     linear-gradient(to bottom, rgba(255, 255, 255, 0.35) 0 1px, transparent 1px),
     linear-gradient(to bottom, #87a044 0%, var(--grass) 24%, var(--grass-dark) 100%);
@@ -432,6 +421,116 @@ body {
   opacity: 0.45;
 }
 
+/* live star-o-meter shown during a round: fills up as the current move's
+   confidence improves, instead of only revealing a score once the round
+   window closes -- 100 points per star, so a 5-round game tops out at 5. */
+.dance-meter {
+  margin: 0.75rem 0;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid rgba(244, 239, 230, 0.16);
+  border-radius: 10px;
+  background: rgba(244, 239, 230, 0.06);
+}
+
+.dance-meter__label {
+  margin: 0 0 0.35rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(244, 239, 230, 0.6);
+}
+
+.dance-meter__stars {
+  display: flex;
+  gap: 0.15rem;
+}
+
+.dance-meter__star {
+  position: relative;
+  display: inline-block;
+  width: 1.6rem;
+  height: 1.6rem;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: rgba(244, 239, 230, 0.22);
+}
+
+.dance-meter__star-outline {
+  display: block;
+}
+
+.dance-meter__star-fill {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  color: var(--gold);
+  /* the live confidence signal jitters frame to frame; smoothing the width
+     keeps the fill reading as a meter instead of a flicker */
+  transition: width 0.15s ease-out;
+}
+
+.dance-meter__score {
+  margin: 0.4rem 0 0;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.82rem;
+  opacity: 0.85;
+}
+
+/* floating tab switcher, docked to the bottom-right corner instead of
+   sitting inline above the panel content */
+.tab-dock {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 4;
+  display: flex;
+  gap: 0.2rem;
+  padding: 0.3rem;
+  border: 1px solid rgba(244, 239, 230, 0.16);
+  border-radius: 999px;
+  background: rgba(8, 14, 22, 0.72);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+.tab-dock__btn {
+  padding: 0.5rem 1.1rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(244, 239, 230, 0.62);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.tab-dock__btn:hover:not(:disabled) {
+  color: var(--ink);
+}
+
+.tab-dock__btn:disabled {
+  background: var(--gold);
+  color: #241a05;
+  cursor: default;
+}
+
+@media (max-width: 640px) {
+  .tab-dock {
+    right: 1rem;
+    bottom: 1rem;
+    padding: 0.25rem;
+  }
+
+  .tab-dock__btn {
+    padding: 0.45rem 0.8rem;
+    font-size: 0.72rem;
+  }
+}
+
 /* narrow viewports: the church already sits behind the left-hand panel by
    design, but there's no room for the dancer off to the right as well */
 @media (max-width: 1100px) {
@@ -448,9 +547,5 @@ body {
   .intro__hint {
     animation: none;
     opacity: 0.9;
-  }
-
-  .scene__dancer {
-    animation: none;
   }
 }

@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import EmpanadaAvatar from './EmpanadaAvatar.jsx'
 import { supabase } from './supabaseClient.js'
 
 const ROUNDS_PER_GAME = 5
@@ -25,12 +24,49 @@ function pickTarget(moves, avoid) {
   return options[Math.floor(Math.random() * options.length)]
 }
 
+// 100 points = 1 star, so a 5-round game (max 500) tops out at 5 stars.
+const POINTS_PER_STAR = 100
+
+// A live star meter: fills up as you dance instead of only revealing the
+// score at the end of a round, so there's something to react to in the
+// moment. `score` can include an in-progress round's live-tracked estimate.
+function DanceMeter({ score, maxScore }) {
+  const totalStars = maxScore / POINTS_PER_STAR
+  const starsEarned = Math.max(0, Math.min(totalStars, score / POINTS_PER_STAR))
+
+  return (
+    <div
+      className="dance-meter"
+      role="img"
+      aria-label={`${score} of ${maxScore} points, ${starsEarned.toFixed(1)} of ${totalStars} stars`}
+    >
+      <div className="dance-meter__stars" aria-hidden="true">
+        {Array.from({ length: totalStars }).map((_, i) => {
+          const fill = Math.max(0, Math.min(1, starsEarned - i)) * 100
+          return (
+            <span className="dance-meter__star" key={i}>
+              <span className="dance-meter__star-outline">★</span>
+              <span className="dance-meter__star-fill" style={{ width: `${fill}%` }}>
+                ★
+              </span>
+            </span>
+          )
+        })}
+      </div>
+      <p className="dance-meter__score">
+        {score} / {maxScore} pts
+      </p>
+    </div>
+  )
+}
+
 function SalsaGame({ pose, prediction, health, playerName }) {
   const [phase, setPhase] = useState('lobby') // lobby | ready | perform | finished
   const [round, setRound] = useState(0)
   const [target, setTarget] = useState(null)
   const [roundScores, setRoundScores] = useState([])
   const [submitState, setSubmitState] = useState('idle') // idle | saving | done | error
+  const [liveProb, setLiveProb] = useState(0) // best confidence seen this round, mirrored for live rendering
   const maxProbRef = useRef(0)
   const submittedRef = useRef(false)
 
@@ -56,6 +92,7 @@ function SalsaGame({ pose, prediction, health, playerName }) {
   useEffect(() => {
     if (phase !== 'perform') return
     maxProbRef.current = 0
+    setLiveProb(0)
     const id = setTimeout(() => {
       const score = Math.round(maxProbRef.current * 100)
       setRoundScores((prev) => {
@@ -79,10 +116,16 @@ function SalsaGame({ pose, prediction, health, playerName }) {
   useEffect(() => {
     if (phase !== 'perform' || !target || !prediction || !prediction.ready) return
     const prob = prediction.probabilities[target] || 0
-    if (prob > maxProbRef.current) maxProbRef.current = prob
+    if (prob > maxProbRef.current) {
+      maxProbRef.current = prob
+      setLiveProb(prob) // drives the live meter; maxProbRef alone can't trigger a re-render
+    }
   }, [prediction, phase, target])
 
   const totalScore = roundScores.reduce((sum, r) => sum + r.score, 0)
+  const maxScore = ROUNDS_PER_GAME * POINTS_PER_STAR
+  // during a round, add in the live-tracked estimate so the meter moves as you dance
+  const liveScore = phase === 'perform' ? totalScore + Math.round(liveProb * 100) : totalScore
 
   // The name was captured on the title card, so once the last round lands the
   // score goes up to the leaderboard on its own -- no submit prompt.
@@ -141,17 +184,15 @@ function SalsaGame({ pose, prediction, health, playerName }) {
           </p>
           <h2>{phase === 'ready' ? 'get ready...' : 'GO!'}</h2>
           <h2>{displayName(target)}</h2>
-          {pose && pose.person_detected ? (
-            <EmpanadaAvatar pose={pose} />
-          ) : (
-            <p>step into frame!</p>
-          )}
+          {!(pose && pose.person_detected) && <p>step into frame!</p>}
+          <DanceMeter score={liveScore} maxScore={maxScore} />
         </div>
       )}
 
       {phase === 'finished' && (
         <div>
-          <h2>final score: {totalScore} / {ROUNDS_PER_GAME * 100}</h2>
+          <h2>final score: {totalScore} / {maxScore}</h2>
+          <DanceMeter score={totalScore} maxScore={maxScore} />
           <table border="1" cellPadding="4">
             <thead>
               <tr>

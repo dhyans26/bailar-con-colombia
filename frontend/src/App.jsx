@@ -1,6 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
-import EmpanadaAvatar from './EmpanadaAvatar.jsx'
 import SalsaGame from './SalsaGame.jsx'
 import Intro from './Intro.jsx'
 import SummitScene from './SummitScene.jsx'
@@ -14,7 +13,7 @@ const WS_RECONNECT_MS = 1000
 function MonitorView({ health, pose, prediction, error }) {
   return (
     <div>
-      <h1>Macondo Pose / LSTM Monitor</h1>
+      <h1>Monitor</h1>
 
       {error && <p>cannot reach backend at {API_BASE}: {error}</p>}
 
@@ -63,7 +62,6 @@ function MonitorView({ health, pose, prediction, error }) {
       {pose && !pose.person_detected && <p>no person detected</p>}
       {pose && pose.person_detected && (
         <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-          <EmpanadaAvatar pose={pose} />
           <table border="1" cellPadding="4">
             <thead>
               <tr>
@@ -178,7 +176,7 @@ function App() {
   // model is already collecting frames by the time the climb finishes.
   return (
     <div className="app">
-      <SummitScene />
+      <SummitScene pose={pose} />
 
       {stage === 'intro' && (
         <Intro
@@ -189,36 +187,43 @@ function App() {
       )}
 
       {stage === 'game' && (
-        <div className="stage" ref={stageRef}>
-          <div className="stage__panel">
-            <div style={{ marginBottom: '16px' }}>
-              <button onClick={() => setView('game')} disabled={view === 'game'}>
-                Salsa Game
-              </button>{' '}
-              <button onClick={() => setView('leaderboard')} disabled={view === 'leaderboard'}>
-                Leaderboard
-              </button>{' '}
-              <button onClick={() => setView('monitor')} disabled={view === 'monitor'}>
-                Monitor
-              </button>
+        <>
+          <div className="stage" ref={stageRef}>
+            <div className="stage__panel">
+              {error && <p>cannot reach backend at {API_BASE}: {error}</p>}
+
+              {view === 'game' && (
+                <SalsaGame
+                  pose={pose}
+                  prediction={prediction}
+                  health={health}
+                  playerName={playerName}
+                  onPlayerNameChange={setPlayerName}
+                />
+              )}
+              {view === 'leaderboard' && <Leaderboard refreshSignal={0} />}
+              {view === 'monitor' && (
+                <MonitorView health={health} pose={pose} prediction={prediction} error={error} />
+              )}
             </div>
-
-            {error && <p>cannot reach backend at {API_BASE}: {error}</p>}
-
-            {view === 'game' && (
-              <SalsaGame
-                pose={pose}
-                prediction={prediction}
-                health={health}
-                playerName={playerName}
-              />
-            )}
-            {view === 'leaderboard' && <Leaderboard refreshSignal={0} />}
-            {view === 'monitor' && (
-              <MonitorView health={health} pose={pose} prediction={prediction} error={error} />
-            )}
           </div>
-        </div>
+
+          <nav className="tab-dock">
+            <button className="tab-dock__btn" onClick={() => setView('game')} disabled={view === 'game'}>
+              Salsa Game
+            </button>
+            <button
+              className="tab-dock__btn"
+              onClick={() => setView('leaderboard')}
+              disabled={view === 'leaderboard'}
+            >
+              Leaderboard
+            </button>
+            <button className="tab-dock__btn" onClick={() => setView('monitor')} disabled={view === 'monitor'}>
+              Monitor
+            </button>
+          </nav>
+        </>
       )}
     </div>
   )
