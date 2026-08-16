@@ -24,18 +24,21 @@ function SummitScene({ pose }) {
 
       <img className="scene__church" src="/church_monserrate.png" alt="" />
       <img className="scene__capybara" src="/sra-capybara-con-dress.png" alt="" />
+
+      {/* palms flank the church and dancer so the sides of the scene aren't bare sky;
+          drawn before the dancer so the empanada reads as in front of the trees */}
+      <div className="scene__palms">
+        <img className="scene__palm scene__palm--edge-left" src="/tree_coconut.png" alt="" />
+        <img className="scene__palm scene__palm--edge-right" src="/tree.png" alt="" />
+      </div>
+
       <div className="scene__dancer">
         <EmpanadaAvatar pose={pose ?? EMPTY_POSE} />
       </div>
       <div className="scene__haze" />
 
+      {/* grass drawn last (within the scene) so it sits in front of the dancer */}
       <div className="scene__ground" />
-
-      {/* palms flank the church and dancer so the sides of the scene aren't bare sky */}
-      <div className="scene__palms">
-        <img className="scene__palm scene__palm--edge-left" src="/tree_coconut.png" alt="" />
-        <img className="scene__palm scene__palm--edge-right" src="/tree.png" alt="" />
-      </div>
 
       <div className="scene__church-shadow" />
     </div>
