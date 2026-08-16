@@ -124,8 +124,8 @@ body {
    ground instead of floating above it. */
 .scene__capybara {
   position: absolute;
-  bottom: -1vh;
-  left: 52%;
+  bottom: 10vh;
+  left: 42%;
   transform: translateX(-50%);
   height: 40vh;
   width: auto;
