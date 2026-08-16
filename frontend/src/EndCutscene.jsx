@@ -3,7 +3,7 @@ import gsap from 'gsap'
 import {
   BUTTON_ART,
   DEFAULT_HINT,
-  DEFAULT_HINT_IMAGE,
+  DEFAULT_HINT_IMAGE_BG,
   LICENSE_DIALOGUE_FAIL,
   LICENSE_DIALOGUE_PASS,
   LICENSE_IMAGE,
@@ -194,13 +194,14 @@ function EndCutscene({ passed, score, maxScore, onComplete, onSpeakerChange }) {
           <img className="cutscene__license" src={LICENSE_IMAGE} alt="Salsa license" />
         )}
         {/* the drawn prompt, except on the license beat, which asks for
-            something other than the plain "space to continue" */}
+            something other than the plain "space to continue". The filled-in
+            art: this one sits over the bright summit with nothing dimming it */}
         {isLast && passed ? (
           <p className="cutscene__hint">space to claim your license</p>
         ) : (
           <img
             className="cutscene__hint cutscene__hint--drawn"
-            src={DEFAULT_HINT_IMAGE}
+            src={DEFAULT_HINT_IMAGE_BG}
             alt={DEFAULT_HINT}
             draggable="false"
           />

@@ -3,7 +3,7 @@ import gsap from 'gsap'
 import Leaderboard from './Leaderboard.jsx'
 import DrawnButton from './DrawnButton.jsx'
 import { publicAsset } from './publicAsset.js'
-import { BEATS, BUTTON_ART, CLIMB_AUDIO, DEFAULT_HINT, DEFAULT_HINT_IMAGE, TITLE } from './story.js'
+import { BEATS, BUTTON_ART, CLIMB_AUDIO, DEFAULT_HINT, DEFAULT_HINT_IMAGE_BG, TITLE } from './story.js'
 
 
 // story.js to update the lore
@@ -176,12 +176,14 @@ function Intro({ onComplete, muted = false }) {
   const beat = index >= 0 ? BEATS[index] : null
   const onTitle = index === TITLE_INDEX
   // drawn prompt on the title card and on every climb beat that leans on the
-  // default "space to continue"; a beat with its own hint line stays as text
+  // default "space to continue"; a beat with its own hint line stays as text.
+  // The climb runs the filled-in art -- the outline alone gets lost in the
+  // bright stretches of the footage.
   const hintImage = onTitle
     ? TITLE.hintImage
     : beat?.hint
       ? null
-      : DEFAULT_HINT_IMAGE
+      : DEFAULT_HINT_IMAGE_BG
 
   return (
     <div className="intro" ref={rootRef} onClick={advance}>
