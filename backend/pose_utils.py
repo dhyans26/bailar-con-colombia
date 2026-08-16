@@ -10,15 +10,12 @@ from ultralytics import YOLO
 
 MODEL_PATH = Path(__file__).resolve().parent.parent / "yolo26n-pose.pt"
 
-# Pose inference is the throughput bottleneck for the whole live pipeline
-# (measured ~9.8fps on CPU vs ~40fps on Apple Silicon's MPS backend for this
-# model), so prefer GPU acceleration whenever it's available.
-if torch.backends.mps.is_available():
+if torch.backends.mps.is_available(): # mps if available (~40fps)
     DEVICE = "mps"
-elif torch.cuda.is_available():
+elif torch.cuda.is_available(): # cuda better
     DEVICE = "cuda"
 else:
-    DEVICE = "cpu"
+    DEVICE = "cpu" # cpu worst at ~10fps
 
 KEYPOINT_NAMES = [
     "nose", "left_eye", "right_eye", "left_ear", "right_ear",
@@ -30,7 +27,6 @@ KEYPOINT_NAMES = [
  L_WRIST, R_WRIST, L_HIP, R_HIP, L_KNEE, R_KNEE, L_ANKLE, R_ANKLE) = range(17)
 
 # 0-indexed conversion of ultralytics.utils.plotting.Annotator.skeleton
-# (which is 1-indexed).
 BONES = [
     (L_ANKLE, L_KNEE), (L_KNEE, L_HIP), (R_ANKLE, R_KNEE), (R_KNEE, R_HIP),
     (L_HIP, R_HIP), (L_SHOULDER, L_HIP), (R_SHOULDER, R_HIP),
@@ -46,18 +42,9 @@ def load_model() -> YOLO:
     return model
 
 
-# A virtual camera (OBS, Camo, NDI) registers a system extension that sits in
-# the same index space as the built-in webcam, and OpenCV exposes cameras by
-# index only -- there is no way to ask AVFoundation for "the real one" by name
-# and get an index back (its device order does not even match OpenCV's). An
-# idle virtual camera does give itself away, though: it serves one fixed
-# placeholder image, so every frame is byte-identical, where a real sensor's
-# frames always differ by at least noise. That is what the scan below looks
-# for.
 AUTO_CAMERA_INDEX = -1
 _PROBE_FRAMES = 8
 _PROBE_MAX_INDEX = 4
-# Sensor noise clears this comfortably; a repeated still image scores 0.0.
 _LIVE_FRAME_DIFF = 0.05
 
 
@@ -69,14 +56,14 @@ def _frames_vary(cap: cv2.VideoCapture) -> bool:
             continue
         if first is None:
             first = frame
-        elif float(cv2.absdiff(first, frame).mean()) > _LIVE_FRAME_DIFF:
+        elif float(cv2.absdiff(first, frame).mean()) > _LIVE_FRAME_DIFF: # just check if theres a diff between frames
             return True
     return False
 
 
 def resolve_camera_index() -> int:
     """Lowest camera index that is a live sensor rather than an idle virtual
-    camera. Falls back to the first index that opens at all."""
+    camera."""
     fallback = None
     for index in range(_PROBE_MAX_INDEX):
         cap = cv2.VideoCapture(index, cv2.CAP_AVFOUNDATION)

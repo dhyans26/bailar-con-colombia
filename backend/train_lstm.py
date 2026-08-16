@@ -61,11 +61,7 @@ def features_for_clips(clips, seq_len: int) -> np.ndarray:
 
 class ClipDataset(Dataset):
     """Wraps raw per-frame keypoint clips + labels and featurizes them
-    lazily. With augment=True, each fetch re-rolls a random mirror/time-crop
-    of the raw frames plus small position jitter, so the model sees a
-    different perturbation of every clip each epoch instead of memorizing
-    the exact recorded sequence -- the main lever against overfitting on a
-    dataset this small."""
+    lazily."""
 
     def __init__(self, clips, labels, seq_len, mean, std, augment: bool,
                  jitter_std: float = 0.03, seed: int = 0):
@@ -94,8 +90,7 @@ class ClipDataset(Dataset):
 
 def stratified_split(y: np.ndarray, val_frac: float, seed: int):
     """Per-class shuffle + split so every well-represented class appears in
-    both train and val -- classes with < 5 takes go entirely into train
-    (not enough to hold anything out without starving training)."""
+    both train and val"""
     rng = np.random.default_rng(seed)
     train_idx, val_idx = [], []
     for c in np.unique(y):
@@ -175,7 +170,7 @@ def main():
     train_clips = [clips[i] for i in train_idx]
     val_clips = [clips[i] for i in val_idx]
 
-    # normalization stats always come from the un-augmented features, so
+    # norm stats always come from the un-augmented features, so
     # they don't drift with whatever a given epoch's random jitter/crop did
     _, mean, std = normalize_features(features_for_clips(train_clips, args.seq_len))
     if len(val_idx):
@@ -207,9 +202,8 @@ def main():
                        num_classes=len(label_names), seq_len=args.seq_len,
                        label_names=label_names)
     model = MoveLSTM(cfg)
-    # label smoothing keeps the model from driving softmax probabilities to
-    # ~1.0 on training examples, which is the main source of overconfident
-    # (and often wrong) predictions at inference time on a small dataset.
+
+    # label smoothing improves perf
     criterion = nn.CrossEntropyLoss(weight=class_weights, label_smoothing=0.1)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
@@ -225,10 +219,7 @@ def main():
             val_loss, val_acc = run_epoch(model, val_loader, criterion)
             print(f"epoch {epoch:3d}  train loss={train_loss:.3f} acc={train_acc:.2f}  "
                   f"val loss={val_loss:.3f} acc={val_acc:.2f}")
-            # checkpoint on val loss rather than val accuracy: loss keeps
-            # falling only while predictions are both correct AND
-            # well-calibrated, whereas accuracy is blind to a model that's
-            # right but wildly overconfident (or increasingly so).
+            # checkpoint on val loss 
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
                 best_val_acc = val_acc
