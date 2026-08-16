@@ -1,7 +1,8 @@
 export const TITLE = {
   image: '/church_monserrate.png',
-  title: 'Bailar con Colombia',
-  subtitle: 'Un baile en la cima de Monserrate',
+  // the logo carries the title and "En Bogotá" line, so no heading text here
+  logo: '/logo.png',
+  title: 'Salsa para Cabí',
   hint: 'press space to begin',
 }
 

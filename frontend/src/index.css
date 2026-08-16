@@ -247,7 +247,7 @@ body {
 }
 
 /* the iglesia, standing on the bottom edge of the title card */
-.intro__title-card img {
+.intro__church {
   position: absolute;
   left: 50%;
   bottom: 0;
@@ -267,8 +267,8 @@ body {
 .intro__capybara {
   position: absolute;
   left: 62%;
-  bottom: 0;
-  height: 44vh;
+  bottom: 8vh;
+  height: 16.8vh;
   width: auto;
   object-fit: contain;
   object-position: bottom;
@@ -366,25 +366,20 @@ body {
   left: clamp(1.5rem, 4vw, 3.5rem);
   top: clamp(1.5rem, 6vh, 3.5rem);
   bottom: auto;
-  width: min(32rem, 62vw);
+  width: min(38rem, 80vw);
   transform: none;
   text-align: left;
 }
 
-.intro__heading {
-  margin: 0;
-  font-size: clamp(2.2rem, 5.5vw, 4rem);
-  font-weight: 800;
-  line-height: 1.02;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.intro__subtitle {
-  margin: 0.4rem 0 0;
-  font-size: clamp(0.95rem, 1.8vw, 1.25rem);
-  font-style: italic;
-  opacity: 0.85;
+/* the drawn logo stands in for the heading + subtitle on the title card */
+.intro__logo {
+  display: block;
+  margin-left: clamp(-1.5rem, -2vw, 0rem);
+  width: min(36.4rem, 75.4vw);
+  max-width: 100%;
+  height: auto;
+  filter: drop-shadow(0 6px 22px rgba(0, 0, 0, 0.55));
+  user-select: none;
 }
 
 .intro__text {
