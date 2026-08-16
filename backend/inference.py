@@ -8,8 +8,12 @@ import numpy as np
 import torch
 
 from lstm_model import ModelConfig, MoveLSTM, clip_to_features
+from runtime_paths import frozen_base_dir
 
-MODEL_DIR = Path(__file__).resolve().parent / "model"
+# In a PyInstaller build the checkpoint is bundled at the app's data root
+# (api.spec adds "model" -> "model"); from source it lives next to this file.
+_frozen = frozen_base_dir()
+MODEL_DIR = (_frozen / "model") if _frozen else Path(__file__).resolve().parent / "model"
 DEFAULT_MODEL_PATH = MODEL_DIR / "lstm_move_classifier.pt"
 
 

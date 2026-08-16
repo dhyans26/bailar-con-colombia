@@ -279,3 +279,11 @@ async def ws_state(websocket: WebSocket) -> None:
             await asyncio.sleep(_WS_CHECK_INTERVAL)
     except WebSocketDisconnect:
         pass
+
+
+# Only hit when running as the PyInstaller-frozen binary (see api.spec) --
+# in dev, the backend is started as `uvicorn api:app` instead (main.js).
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="127.0.0.1", port=8000)
