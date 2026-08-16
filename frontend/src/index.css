@@ -118,6 +118,21 @@ body {
   filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.3));
 }
 
+/* Sra. Capybara, standing right outside the church keeping an eye on the
+   fiesta. Same feet-on-the-grass treatment as the dancer: the cutout's box
+   sits a hair below the viewport edge so the visible feet rest on the
+   ground instead of floating above it. */
+.scene__capybara {
+  position: absolute;
+  bottom: -1vh;
+  left: 52%;
+  transform: translateX(-50%);
+  height: 40vh;
+  width: auto;
+  pointer-events: none;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.3));
+}
+
 .scene__haze {
   position: absolute;
   left: 0;
@@ -245,6 +260,20 @@ body {
   will-change: transform;
   pointer-events: none;
   filter: drop-shadow(0 20px 44px rgba(0, 0, 0, 0.55));
+}
+
+/* Sra. Capybara on the title card, at the church door like she is in the
+   game background. Fades out with the rest of the card once the climb starts. */
+.intro__capybara {
+  position: absolute;
+  left: 62%;
+  bottom: 0;
+  height: 44vh;
+  width: auto;
+  object-fit: contain;
+  object-position: bottom;
+  pointer-events: none;
+  filter: drop-shadow(0 16px 30px rgba(0, 0, 0, 0.4));
 }
 
 /* every climb clip is stacked here, the running one is faded up */
@@ -669,6 +698,15 @@ body {
   .scene__palm--near-left,
   .scene__palm--near-right {
     height: 24vh;
+  }
+
+  /* no room for the bystanders off to the sides either */
+  .scene__capybara {
+    display: none;
+  }
+
+  .intro__capybara {
+    display: none;
   }
 }
 
