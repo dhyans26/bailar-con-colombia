@@ -262,12 +262,7 @@ function App() {
       <SummitScene pose={pose} />
 
       {stage === 'intro' && (
-        <Intro
-          playerName={playerName}
-          onPlayerNameChange={setPlayerName}
-          onComplete={() => setStage('game')}
-          muted={muted}
-        />
+        <Intro onComplete={() => setStage('game')} muted={muted} />
       )}
 
       {stage === 'game' && (
@@ -282,6 +277,7 @@ function App() {
                   prediction={prediction}
                   health={health}
                   playerName={playerName}
+                  onPlayerNameChange={setPlayerName}
                   onGameActiveChange={handleGameActiveChange}
                   muted={muted}
                 />

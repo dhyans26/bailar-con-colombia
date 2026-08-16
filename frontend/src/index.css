@@ -299,8 +299,8 @@ body {
   border-color: rgba(244, 239, 230, 0.6);
 }
 
-/* the name prompt that appears when the climb starts from the title card */
-.intro__name-overlay {
+/* the name prompt shown when the player clicks Start Game without a name yet */
+.name-prompt-overlay {
   position: absolute;
   inset: 0;
   z-index: 5;
@@ -312,7 +312,7 @@ body {
   cursor: default;
 }
 
-.intro__name-card {
+.name-prompt-card {
   width: min(26rem, 84vw);
   padding: 1.75rem 2rem;
   border: 1px solid rgba(244, 239, 230, 0.2);
@@ -322,19 +322,19 @@ body {
   text-align: center;
 }
 
-.intro__name-card h2 {
+.name-prompt-card h2 {
   margin: 0 0 0.5rem;
   font-size: 1.5rem;
 }
 
-.intro__name-card p {
+.name-prompt-card p {
   margin: 0 0 1.25rem;
   font-size: 0.95rem;
   opacity: 0.8;
 }
 
-.intro__name-card input,
-.intro__name-card button {
+.name-prompt-card input,
+.name-prompt-card button {
   padding: 0.5rem 0.9rem;
   border: 1px solid rgba(244, 239, 230, 0.28);
   border-radius: 8px;
@@ -344,22 +344,22 @@ body {
   font-size: 0.95rem;
 }
 
-.intro__name-card input {
+.name-prompt-card input {
   width: 100%;
   margin-bottom: 0.9rem;
   text-align: center;
 }
 
-.intro__name-card button:not(:disabled) {
+.name-prompt-card button:not(:disabled) {
   cursor: pointer;
 }
 
-.intro__name-card button:not(:disabled):hover {
+.name-prompt-card button:not(:disabled):hover {
   border-color: var(--gold);
   color: var(--gold);
 }
 
-.intro__name-card button:disabled {
+.name-prompt-card button:disabled {
   opacity: 0.45;
 }
 
