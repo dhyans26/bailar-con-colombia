@@ -37,9 +37,14 @@ export const INTRO_MUSIC_VOLUME = 0.55
 
 export const DEFAULT_HINT = 'space to continue'
 
-// the drawn version of the default hint, shown through the climb beats.
-// A beat that sets its own `hint` string still gets plain text.
-export const DEFAULT_HINT_IMAGE = '/inst_space_cont.png'
+// the drawn version of the default hint. Outline only, so it wants a dark
+// backdrop under it -- kept here to swap back to on any screen that has one.
+export const DEFAULT_HINT_IMAGE = publicAsset('/inst_space_cont.png')
+
+// the same prompt with the fill left in. This is the one in use: the outline
+// alone washes out over the climb footage and over the summit's sky and grass.
+// A beat that sets its own `hint` string still gets plain text instead.
+export const DEFAULT_HINT_IMAGE_BG = publicAsset('/button_space_cont_bg.png')
 
 // the drawn button artwork -- see DrawnButton.jsx
 export const BUTTON_ART = {
