@@ -66,7 +66,7 @@ body {
   position: absolute;
   bottom: 5vh;
   left: 26%;
-  height: 76vh;
+  height: 93vh;
   width: auto;
   max-width: 96vw;
   object-fit: contain;
@@ -99,8 +99,14 @@ body {
      .scene's overflow:hidden -- to bring the actual feet up onto the grass
      instead of sinking into it */
   bottom: -1vh;
-  left: 68%;
-  transform: translateX(-50%);
+  left: 78%;
+  /* scaled up around the feet, not the box's bottom edge -- the leg tips sit
+     ~68% down the viewBox (the empanada body itself only occupies the top
+     half; the rest is empty room for the legs' fallback swing), so anchoring
+     the scale there keeps the feet planted on the grass at any size instead
+     of lifting off as the box's own empty padding gets magnified too */
+  transform: translateX(-50%) scale(2);
+  transform-origin: 50% 68%;
   pointer-events: none;
 }
 
@@ -122,16 +128,24 @@ body {
   pointer-events: none;
 }
 
-/* the flat top of the mountain */
+/* the flat top of the mountain -- grass.png is a much taller shot with a lot
+   of empty space above the blades (room was left for the blades to sway),
+   so it's scaled up well past this band's own height and bottom-anchored;
+   the extra height above just gets clipped by this element's own bounds,
+   leaving only the actual grass on screen instead of the blank space over it */
 .scene__ground {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
   height: 11vh;
-  background:
+  background-color: var(--grass-dark);
+  background-image:
     linear-gradient(to bottom, rgba(255, 255, 255, 0.35) 0 1px, transparent 1px),
-    linear-gradient(to bottom, #87a044 0%, var(--grass) 24%, var(--grass-dark) 100%);
+    url('/grass.png');
+  background-repeat: no-repeat, repeat-x;
+  background-position: top left, bottom center;
+  background-size: auto, auto 41vh;
 }
 
 .scene__floor-light {
@@ -406,36 +420,26 @@ body {
 
 /* ---------- game ---------- */
 
-/* SalsaGame and MonitorView ship their own plain markup; this just gives
-   them a readable surface to sit on over the summit. */
+/* SalsaGame and MonitorView ship their own plain markup; this just places
+   it over the summit. */
 .stage {
   position: relative;
   height: 100%;
   padding: 1.25rem;
   overflow: auto;
+  display: flex;
+  justify-content: flex-end;
 }
 
-/* kept to a left-hand column so the iglesia behind it stays visible.
+/* kept to a right-hand column, floating directly over the summit with no
+   card behind it -- no background/border/blur, just the text.
    Sized well past what a desk-bound app would need -- the player is on
    their feet a few steps back from the screen, dancing, not reading up
    close, so everything in here reads at "across the room" size. */
 .stage__panel {
   max-width: 40rem;
   padding: 1.5rem 1.75rem;
-  border: 1px solid rgba(244, 239, 230, 0.16);
-  border-radius: 14px;
-  background: rgba(8, 14, 22, 0.66);
-  backdrop-filter: blur(6px);
   font-size: clamp(1.1rem, 1.7vw, 1.35rem);
-}
-
-/* While a round is live, DanceCallout takes over as a fullscreen portal --
-   the boxed panel underneath has nothing left to show, so drop its
-   background/border instead of leaving an empty gray box on screen. */
-.stage__panel--playing {
-  border-color: transparent;
-  background: transparent;
-  backdrop-filter: none;
 }
 
 .stage__panel h1 {
@@ -628,60 +632,6 @@ body {
   right: clamp(1.5rem, 4vw, 3.5rem);
   top: 50%;
   transform: translateY(-50%);
-}
-
-/* floating tab switcher, docked to the bottom-right corner instead of
-   sitting inline above the panel content */
-.tab-dock {
-  position: fixed;
-  right: 1.5rem;
-  bottom: 1.5rem;
-  z-index: 4;
-  display: flex;
-  gap: 0.2rem;
-  padding: 0.3rem;
-  border: 1px solid rgba(244, 239, 230, 0.16);
-  border-radius: 999px;
-  background: rgba(8, 14, 22, 0.72);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
-}
-
-.tab-dock__btn {
-  padding: 0.5rem 1.1rem;
-  border: none;
-  border-radius: 999px;
-  background: transparent;
-  color: rgba(244, 239, 230, 0.62);
-  font: inherit;
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.tab-dock__btn:hover:not(:disabled) {
-  color: var(--ink);
-}
-
-.tab-dock__btn:disabled {
-  background: var(--gold);
-  color: #241a05;
-  cursor: default;
-}
-
-@media (max-width: 640px) {
-  .tab-dock {
-    right: 1rem;
-    bottom: 1rem;
-    padding: 0.25rem;
-  }
-
-  .tab-dock__btn {
-    padding: 0.45rem 0.8rem;
-    font-size: 0.72rem;
-  }
 }
 
 /* narrow viewports: the church already sits behind the left-hand panel by

@@ -77,7 +77,8 @@
       "Bash(echo \"exit:$?\")",
       "Bash(echo \"grep exit=$?\")",
       "Bash(sed -i '' 's/5178/5179/' measure4.mjs)",
-      "Bash(node debug2.mjs)"
+      "Bash(node debug2.mjs)",
+      "Bash(node -e \"console.log\\(require.resolve\\('playwright'\\)\\)\")"
     ],
     "additionalDirectories": [
       "/Users/vedpatel/code/Macondo",

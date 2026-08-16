@@ -237,6 +237,23 @@ function App() {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
+  // Left/right arrows swap between the game and the monitor -- replaces the
+  // old on-screen tab buttons, which sat over the summit as a permanent UI
+  // chrome element. Only wired up once the game stage is actually showing.
+  useEffect(() => {
+    if (stage !== 'game') return
+    const onKey = (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+      if (e.metaKey || e.ctrlKey || e.altKey) return
+      const tag = e.target?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) return
+      e.preventDefault()
+      setView((v) => (v === 'game' ? 'monitor' : 'game'))
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [stage])
+
   // Leaving the game view abandons any in-progress round, so hand the ambient
   // track back over instead of leaving the player in silence.
   useEffect(() => {
@@ -267,7 +284,7 @@ function App() {
       {stage === 'game' && (
         <>
           <div className="stage" ref={stageRef}>
-            <div className={`stage__panel${gameActive ? ' stage__panel--playing' : ''}`}>
+            <div className="stage__panel">
               {error && <p>cannot reach backend at {API_BASE}: {error}</p>}
 
               {view === 'game' && (
@@ -290,15 +307,6 @@ function App() {
               )}
             </div>
           </div>
-
-          <nav className="tab-dock">
-            <button className="tab-dock__btn" onClick={() => setView('game')} disabled={view === 'game'}>
-              Salsa Game
-            </button>
-            <button className="tab-dock__btn" onClick={() => setView('monitor')} disabled={view === 'monitor'}>
-              Monitor
-            </button>
-          </nav>
         </>
       )}
     </div>

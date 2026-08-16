@@ -286,7 +286,7 @@ function SalsaGame({
 
   return (
     <div>
-      {phase !== 'ready' && phase !== 'perform' && <h1>Salsa Skills Challenge</h1>}
+      {phase !== 'ready' && phase !== 'perform' && <h1>Baile para Gabi</h1>}
 
       {!health && <p>connecting to backend...</p>}
 
