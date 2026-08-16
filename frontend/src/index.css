@@ -129,6 +129,24 @@ body {
   filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.3));
 }
 
+/* bob whichever character is currently speaking in the end cutscene.
+   `translate` is an independent CSS property from `transform`, so it
+   composes with each element's existing transform instead of replacing it. */
+@keyframes talk-wiggle {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -1.6vh;
+  }
+}
+
+.scene__capybara--talking,
+.scene__dancer--talking {
+  animation: talk-wiggle 0.45s ease-in-out infinite;
+}
+
 .scene__haze {
   position: absolute;
   left: 0;
@@ -672,6 +690,77 @@ body {
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
+}
+
+/* ---------- end cutscene: Cabí grants (or withholds) the salsa license ---------- */
+
+.cutscene-overlay {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.cutscene__box {
+  position: absolute;
+  left: 50%;
+  bottom: 12vh;
+  width: min(46rem, 82vw);
+  transform: translateX(-50%);
+  text-align: center;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.85);
+}
+
+.cutscene__speaker {
+  margin: 0 0 0.35rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.cutscene__text {
+  margin: 0;
+  font-size: clamp(1.05rem, 2.2vw, 1.6rem);
+  line-height: 1.5;
+}
+
+.cutscene__license {
+  display: block;
+  margin: 1.25rem auto 0;
+  max-height: 18vh;
+  width: auto;
+  filter: drop-shadow(0 10px 26px rgba(0, 0, 0, 0.55));
+}
+
+.cutscene__hint {
+  margin: 1.6rem 0 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--gold);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+
+.cutscene__skip {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid rgba(244, 239, 230, 0.25);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.25);
+  color: rgba(244, 239, 230, 0.7);
+  font: inherit;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.cutscene__skip:hover {
+  color: var(--ink);
+  border-color: rgba(244, 239, 230, 0.6);
 }
 
 /* dance o meter like just dance */

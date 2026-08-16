@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { supabase } from './supabaseClient.js'
+import EndCutscene from './EndCutscene.jsx'
+import { LICENSE_SCORE_THRESHOLD } from './story.js'
 
 const ROUNDS_PER_GAME = 5
 const READY_MS = 2000
@@ -101,6 +103,7 @@ function SalsaGame({
   playerName,
   onPlayerNameChange,
   onGameActiveChange,
+  onSpeakerChange,
   onReturnToMenu,
   muted = false,
 }) {
@@ -111,6 +114,7 @@ function SalsaGame({
   const [submitState, setSubmitState] = useState('idle') // idle | saving | done | error
   const [liveProb, setLiveProb] = useState(0) // best confidence seen this round, mirrored for live rendering
   const [showNamePrompt, setShowNamePrompt] = useState(false)
+  const [cutsceneSeen, setCutsceneSeen] = useState(false)
   // 3-2-1-START! label shown only during round 1's ready phase; null the rest of the time.
   const [countdownLabel, setCountdownLabel] = useState(null)
   const maxProbRef = useRef(0)
@@ -127,6 +131,7 @@ function SalsaGame({
     setRoundScores([])
     setSubmitState('idle')
     submittedRef.current = false
+    setCutsceneSeen(false)
     setRound(0)
     setTarget(pickTarget(moves, null))
     trackRef.current = pickTrack()
@@ -338,7 +343,17 @@ function SalsaGame({
         />
       )}
 
-      {phase === 'finished' && (
+      {phase === 'finished' && !cutsceneSeen && (
+        <EndCutscene
+          passed={totalScore > LICENSE_SCORE_THRESHOLD}
+          score={totalScore}
+          maxScore={maxScore}
+          onComplete={() => setCutsceneSeen(true)}
+          onSpeakerChange={onSpeakerChange}
+        />
+      )}
+
+      {phase === 'finished' && cutsceneSeen && (
         <div className="finished">
           <div className="finished-body">
             <div className="finished-summary">

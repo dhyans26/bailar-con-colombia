@@ -2,7 +2,7 @@ import EmpanadaAvatar from './EmpanadaAvatar.jsx'
 
 const EMPTY_POSE = { keypoints: [] } // senior emp needs ts otherwise he wont move broski
 
-function SummitScene({ pose }) {
+function SummitScene({ pose, speaker }) {
   return (
     <div className="scene" aria-hidden="true">
       <div className="scene__sky" />
@@ -23,7 +23,11 @@ function SummitScene({ pose }) {
       </svg>
 
       <img className="scene__church" src="/church_monserrate.png" alt="" />
-      <img className="scene__capybara" src="/sra-capybara-con-dress.png" alt="" />
+      <img
+        className={`scene__capybara${speaker === 'cabi' ? ' scene__capybara--talking' : ''}`}
+        src="/sra-capybara-con-dress.png"
+        alt=""
+      />
 
       {/* palms flank the church and dancer so the sides of the scene aren't bare sky;
           drawn before the dancer so the empanada reads as in front of the trees */}
@@ -32,7 +36,7 @@ function SummitScene({ pose }) {
         <img className="scene__palm scene__palm--edge-right" src="/tree.png" alt="" />
       </div>
 
-      <div className="scene__dancer">
+      <div className={`scene__dancer${speaker === 'empanada' ? ' scene__dancer--talking' : ''}`}>
         <EmpanadaAvatar pose={pose ?? EMPTY_POSE} />
       </div>
       <div className="scene__haze" />

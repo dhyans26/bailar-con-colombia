@@ -100,6 +100,7 @@ function App() {
   const [error, setError] = useState(null)
   const [gameActive, setGameActive] = useState(false)
   const [muted, setMuted] = useState(false)
+  const [speaker, setSpeaker] = useState(null) // 'cabi' | 'empanada' | null -- who's talking in the end cutscene
   const stageRef = useRef(null)
   const lobbyMusicRef = useRef(null)
   const mutedRef = useRef(false)
@@ -246,7 +247,7 @@ function App() {
 
   return (
     <div className="app">
-      <SummitScene pose={pose} />
+      <SummitScene pose={pose} speaker={speaker} />
 
       {stage === 'intro' && (
         <Intro onComplete={() => setStage('game')} muted={muted} />
@@ -266,6 +267,7 @@ function App() {
                   playerName={playerName}
                   onPlayerNameChange={setPlayerName}
                   onGameActiveChange={handleGameActiveChange}
+                  onSpeakerChange={setSpeaker}
                   onReturnToMenu={() => {
                     setPlayerName('')
                     setStage('intro')

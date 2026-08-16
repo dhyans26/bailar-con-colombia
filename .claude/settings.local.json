@@ -101,7 +101,8 @@
       "Read(//private/tmp/**)",
       "Bash(node /private/tmp/claude-502/-Users-vedpatel-code-Macondo/dc1de4a8-3121-477e-bf6b-04d7c6576080/scratchpad/cdp.mjs)",
       "Bash(node /private/tmp/claude-502/-Users-vedpatel-code-Macondo/dc1de4a8-3121-477e-bf6b-04d7c6576080/scratchpad/cdp3.mjs /private/tmp/claude-502/-Users-vedpatel-code-Macondo/dc1de4a8-3121-477e-bf6b-04d7c6576080/scratchpad/grass_game.png)",
-      "Bash(node /private/tmp/claude-502/-Users-vedpatel-code-Macondo/dc1de4a8-3121-477e-bf6b-04d7c6576080/scratchpad/cdp4.mjs /private/tmp/claude-502/-Users-vedpatel-code-Macondo/dc1de4a8-3121-477e-bf6b-04d7c6576080/scratchpad/grass_skip.png)"
+      "Bash(node /private/tmp/claude-502/-Users-vedpatel-code-Macondo/dc1de4a8-3121-477e-bf6b-04d7c6576080/scratchpad/cdp4.mjs /private/tmp/claude-502/-Users-vedpatel-code-Macondo/dc1de4a8-3121-477e-bf6b-04d7c6576080/scratchpad/grass_skip.png)",
+      "Bash(echo \"lint: $?\")"
     ],
     "additionalDirectories": [
       "/Users/vedpatel/code/Macondo",
