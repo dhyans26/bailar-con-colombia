@@ -48,6 +48,10 @@ function pickTarget(moves, avoid) {
 // 100 points = 1 star, so a 5 round game is 5 stars
 const POINTS_PER_STAR = 100
 
+// the drawn star -- the meter stacks two copies of it, a ghosted one for the
+// empty state and a full-colour one revealed from the bottom as points land
+const STAR_ART = publicAsset('/star.png')
+
 // just dance meter that fills up as u gain scores
 function DanceMeter({ score, maxScore }) {
   const totalStars = maxScore / POINTS_PER_STAR
@@ -64,9 +68,14 @@ function DanceMeter({ score, maxScore }) {
           const fill = Math.max(0, Math.min(1, starsEarned - i)) * 100
           return (
             <span className="dance-meter__star" key={i}>
-              <span className="dance-meter__star-outline">★</span>
+              <img
+                className="dance-meter__star-art dance-meter__star-outline"
+                src={STAR_ART}
+                alt=""
+                draggable="false"
+              />
               <span className="dance-meter__star-fill" style={{ height: `${fill}%` }}>
-                ★
+                <img className="dance-meter__star-art" src={STAR_ART} alt="" draggable="false" />
               </span>
             </span>
           )

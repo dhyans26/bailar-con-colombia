@@ -928,18 +928,27 @@ body {
   gap: 0.25rem;
 }
 
+/* the box takes the drawing's own proportions rather than a square, so the
+   art meets all four edges -- the fill below clips upward from the bottom
+   edge, and letterboxing would have it climbing through empty space first */
 .dance-meter__star {
+  --star-w: 2.9rem;
   position: relative;
   display: block;
-  width: 2.6rem;
-  height: 2.6rem;
-  font-size: 2.6rem;
-  line-height: 1;
-  color: rgba(244, 239, 230, 0.35);
+  width: var(--star-w);
+  aspect-ratio: 364 / 303;
 }
 
-.dance-meter__star-outline {
+.dance-meter__star-art {
   display: block;
+  width: var(--star-w);
+  aspect-ratio: 364 / 303;
+  user-select: none;
+}
+
+/* the empty state is the same drawing knocked back to a ghost of itself */
+.dance-meter__star-outline {
+  filter: grayscale(1) brightness(1.35) opacity(0.32);
 }
 
 .dance-meter__star-fill {
@@ -948,9 +957,17 @@ body {
   bottom: 0;
   width: 100%;
   overflow: hidden;
-  color: var(--gold);
-  transition: height 0.15s ease-out; 
+  transition: height 0.15s ease-out;
   /* jitters alot so transition helps */
+}
+
+/* pinned to the bottom of the clip window, so shrinking the window trims the
+   star from the top down and the colour appears to pour in from below */
+.dance-meter__star-fill .dance-meter__star-art {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45));
 }
 
 .dance-meter__score {
