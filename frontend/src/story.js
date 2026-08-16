@@ -58,7 +58,7 @@ export const CLIMB_AUDIO = true
 
 // ---------- end-screen license cutscene ----------
 
-export const LICENSE_SCORE_THRESHOLD = 0
+export const LICENSE_SCORE_THRESHOLD = 350
 
 // {score}, {maxScore}, {threshold} are interpolated by EndCutscene.
 export const LICENSE_DIALOGUE_PASS = [

@@ -4,6 +4,14 @@ A desktop game where you dance salsa in front of your webcam, and computer visio
 
 Real-time pose estimation (YOLO) feeds a LSTM move classifier that recognizes your dance moves (`front_and_back`, `idle`, `side_step`, `spin`) live from webcam video. Dance well and you'll earn your salsa license from Señorita Cabí and Señor Empanada, up on the slopes of Monserrate, Bogotá.
 
+## Install (macOS)
+
+1. Grab the latest `.dmg` from [Releases](https://github.com/dhyans26/bailar-con-colombia/releases).
+2. Open the `.dmg` and drag **Macondo** into your `Applications` folder.
+3. The app is ad-hoc signed, so Gatekeeper will block the first launch as "unidentified developer." Right-click (or Control-click) the app in `Applications` and choose **Open**
+4. Grant camera access when prompted
+
+Only an Apple Silicon (arm64) build is currently published; there's no Windows/Linux release yet, see [Frontend setup](#frontend-setup) below to run from source instead.
 
 ### Training data / model
 
@@ -15,10 +23,14 @@ Real-time pose estimation (YOLO) feeds a LSTM move classifier that recognizes yo
 
 ### Prerequisites
 
-- Python 3.10+ and a virtualenv at `.venv/` in the repo root (Electron looks for it first before falling back to `python` on `PATH`)
+- Python 3.12+ and a virtualenv at `.venv/` in the repo root 
 - Node.js + npm
 - A webcam
 - A [Supabase](https://supabase.com) project (for the leaderboard)
+
+### Supabase setup
+
+Apply [`supabase/schema.sql`](supabase/schema.sql) to your Supabase project to set up the leaderboard table and RPC.
 
 ### Backend setup
 
@@ -26,13 +38,6 @@ Real-time pose estimation (YOLO) feeds a LSTM move classifier that recognizes yo
 python -m venv .venv
 source .venv/bin/activate    # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-```
-
-Run the API standalone (auto-reload, for development):
-
-```bash
-cd backend
-uvicorn api:app --reload --port 8000
 ```
 
 ### Frontend setup
@@ -49,24 +54,6 @@ Run everything together as the Electron app (starts the Python backend automatic
 npm run electron:dev
 ```
 
-Or just the web frontend against an already-running backend:
-
-```bash
-npm run dev
-```
-
-### Environment variables
-
-Copy [`.env.sample`](.env.sample) to `.env` and fill in your own Supabase project credentials:
-
-```
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
-```
-
-Apply [`supabase/schema.sql`](supabase/schema.sql) to your Supabase project to set up the leaderboard table and RPC.
-
-
 ## Acknowledgments
 
-Thank u so much to Tati for teaching us salsa and farming data, and to Dhamari for farming data. Me yum data 🫓
+Thank u so much to Tati for teaching us salsa and farming data, and to Dhamari for farming data!!!
