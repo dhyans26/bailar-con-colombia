@@ -24,6 +24,7 @@ function SummitScene({ pose }) {
       </svg>
 
       <img className="scene__church" src="/church_monserrate.png" alt="" />
+      <img className="scene__capybara" src="/sra-capybara-con-dress.png" alt="" />
       <div className="scene__dancer">
         <EmpanadaAvatar pose={pose ?? EMPTY_POSE} />
       </div>

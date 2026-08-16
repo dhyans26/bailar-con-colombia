@@ -190,6 +190,12 @@ function Intro({ onComplete, muted = false }) {
 
       <div className="intro__title-card">
         <img src={TITLE.image} alt="" ref={titleRef} draggable="false" />
+        <img
+          className="intro__capybara"
+          src="/sra-capybara-con-dress.png"
+          alt=""
+          draggable="false"
+        />
       </div>
 
       {/* palms flank the church so the sides of the title card aren't bare sky */}
