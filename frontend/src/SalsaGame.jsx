@@ -336,7 +336,7 @@ function SalsaGame({
       {showNamePrompt && (
         <div className="name-prompt-overlay" onClick={(e) => e.stopPropagation()}>
           <div
-            className="name-prompt-card"
+            className="name-prompt-card card-drawn"
             role="dialog"
             aria-modal="true"
             aria-labelledby="game-name-heading"
