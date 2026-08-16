@@ -250,9 +250,16 @@ function Intro({ onComplete, muted = false }) {
             />
           )}
           {beat && <p className="intro__text">{beat.text}</p>}
-          <p className="intro__hint">
-            {(onTitle ? TITLE.hint : beat?.hint) ?? DEFAULT_HINT}
-          </p>
+          {onTitle ? (
+            <img
+              className="intro__hint intro__hint--drawn"
+              src={TITLE.hintImage}
+              alt={TITLE.hint}
+              draggable="false"
+            />
+          ) : (
+            <p className="intro__hint">{beat?.hint ?? DEFAULT_HINT}</p>
+          )}
         </div>
       )}
 

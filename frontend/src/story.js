@@ -3,6 +3,8 @@ export const TITLE = {
   // the logo carries the title and "En Bogotá" line, so no heading text here
   logo: '/logo.png',
   title: 'Salsa para Cabí',
+  // the prompt is drawn art on the title card; the text doubles as its alt
+  hintImage: '/instructions_space.png',
   hint: 'press space to begin',
 }
 

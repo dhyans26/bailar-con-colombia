@@ -337,14 +337,65 @@ body {
   text-shadow: 0 2px 18px rgba(0, 0, 0, 0.85);
 }
 
-/* the title card sets its block up in the top-left corner instead */
+/* the title card spreads its block over the whole screen: logo in the
+   top-left corner, the "press space" prompt centred along the bottom where
+   a start prompt is looked for. Click-through so the leaderboard stays live. */
 .intro__copy--title {
-  left: clamp(1.5rem, 4vw, 3.5rem);
-  top: clamp(1.5rem, 6vh, 3.5rem);
-  bottom: auto;
-  width: min(38rem, 80vw);
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: auto;
+  padding: clamp(1.5rem, 6vh, 3.5rem) clamp(1.5rem, 4vw, 3.5rem) 5vh;
   transform: none;
   text-align: left;
+  pointer-events: none;
+}
+
+.intro__copy--title .intro__hint {
+  align-self: center;
+  margin: 0;
+}
+
+/* the drawn "press space to begin". Cropped tight to its ink, so the box
+   is the artwork -- width alone places it. Doubled class so it outranks the
+   plain .intro__hint text styling further down the sheet. */
+.intro__hint.intro__hint--drawn {
+  display: block;
+  width: min(26rem, 56vw);
+  height: auto;
+  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.55));
+  user-select: none;
+  /* breathes to draw the eye, then settles once the pointer is on it */
+  animation: hint-breathe 3.2s ease-in-out infinite;
+  opacity: 1;
+  /* the copy layer is click-through; the prompt itself takes the hover.
+     `scale` rather than `transform`, which gsap owns on this element. */
+  pointer-events: auto;
+  scale: 1;
+  transition: scale 0.18s ease-out, filter 0.18s ease-out, opacity 0.18s ease-out;
+}
+
+/* hovering stops the breathing and holds it at full strength */
+.intro__hint.intro__hint--drawn:hover {
+  animation: none;
+  opacity: 1;
+  scale: 1.07;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.6));
+}
+
+@keyframes hint-breathe {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 /* the drawn logo stands in for the heading + subtitle on the title card */
