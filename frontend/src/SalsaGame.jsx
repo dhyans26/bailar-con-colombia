@@ -340,19 +340,21 @@ function SalsaGame({
 
       {phase === 'finished' && (
         <div className="finished">
-          <div className="finished-summary">
-            <DanceMeter score={totalScore} maxScore={maxScore} />
-          </div>
+          <div className="finished-body">
+            <div className="finished-summary">
+              <DanceMeter score={totalScore} maxScore={maxScore} />
+            </div>
 
-          <ul className="finished-rounds">
-            {roundScores.map((r, i) => (
-              <li key={i}>
-                <span className="finished-rounds__round">{i + 1}</span>
-                <span className="finished-rounds__move">{displayName(r.move)}</span>
-                <span className="finished-rounds__score">{r.score}</span>
-              </li>
-            ))}
-          </ul>
+            <ul className="finished-rounds">
+              {roundScores.map((r, i) => (
+                <li key={i}>
+                  <span className="finished-rounds__round">{i + 1}</span>
+                  <span className="finished-rounds__move">{displayName(r.move)}</span>
+                  <span className="finished-rounds__score">{r.score}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
 
           {submitState === 'saving' && <p className="finished-status">submitting your score...</p>}
           {submitState === 'done' && <p className="finished-status">score saved!</p>}
