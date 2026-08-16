@@ -296,8 +296,17 @@ function SalsaGame({
   return (
     <div>
       {phase !== 'ready' && phase !== 'perform' && (
-        <h1 className={phase === 'finished' && !cutsceneSeen ? 'title--cutscene' : undefined}>
-          Baile para Cabi
+        <h1
+          className={
+            'game__title' + (phase === 'finished' && !cutsceneSeen ? ' title--cutscene' : '')
+          }
+        >
+          <img
+            className="game__title-logo"
+            src={publicAsset('/baile_logo.png')}
+            alt="Baile Salsa para Cabí con Sr Empanada"
+            draggable="false"
+          />
         </h1>
       )}
 
@@ -313,8 +322,7 @@ function SalsaGame({
       {moves.length > 0 && phase === 'lobby' && (
         <div>
           <p>
-            {ROUNDS_PER_GAME} rounds. Each round calls out a move, salsa it before time's up to
-            score points.
+            You have five rounds to bailar your heart out and get as many points as you can...
           </p>
           <DrawnButton
             className="btn-drawn--start"
@@ -409,7 +417,12 @@ function SalsaGame({
               label="play again"
               onClick={startGame}
             />
-            <button onClick={onReturnToMenu}>return to main menu</button>
+            <DrawnButton
+              className="btn-drawn--home"
+              src={BUTTON_ART.home}
+              label="return to main menu"
+              onClick={onReturnToMenu}
+            />
           </div>
         </div>
       )}

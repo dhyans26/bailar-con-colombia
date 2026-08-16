@@ -203,6 +203,17 @@ body {
   transform: rotate(-3deg) translate(4%, -2%);
 }
 
+/* on the summit the coconut palm stands over by the other tree rather than on
+   the far side, so scope the move to .scene -- the intro renders its own palms
+   with these same classes and its composition is set the way it is.
+   The offset clears the right tree's own width (58vh tall at the source art's
+   0.78 aspect, less the 4% nudge in its transform) plus a couple of vh of
+   daylight, then allows for the 6% this one's own transform walks it right. */
+.scene .scene__palm--edge-left {
+  left: auto;
+  right: calc(48vh - 2vw);
+}
+
 /* a little further in, smaller -- reads as set back from the edge trees */
 .scene__palm--near-left {
   left: 9%;
@@ -638,6 +649,28 @@ body {
   margin: 0;
 }
 
+/* the panel's heading is drawn art, so the type styling above has nothing to
+   act on and the outline text-shadow would only trace the image box */
+.stage__panel .game__title {
+  text-shadow: none;
+}
+
+/* sized by height so the artwork's own aspect ratio sets the width, and the
+   title never eats the panel on a short window. `margin-left: auto` walks it
+   over to the panel's right edge, above the copy it titles */
+.game__title-logo {
+  display: block;
+  width: auto;
+  height: min(46vh, 24rem);
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: 0;
+  object-fit: contain;
+  object-position: right center;
+  filter: drop-shadow(0 6px 22px rgba(0, 0, 0, 0.55));
+  user-select: none;
+}
+
 .stage__panel h2 {
   margin: 1rem 0 0.4rem;
   font-size: clamp(1.6rem, 2.8vw, 2.1rem);
@@ -984,6 +1017,13 @@ button.btn-drawn--play-again {
   width: min(12rem, 46vw);
 }
 
+/* sits shoulder to shoulder with play again in .finished-actions. The two
+   drawings have different aspect ratios (1.65 here against 2.49 there), so the
+   width is picked to land them on the same height rather than the same width */
+button.btn-drawn--home {
+  width: min(8rem, 31vw);
+}
+
 /* skip sits in the corner and shouldn't be begging for attention, so it holds
    steady instead of breathing -- it still swells under the pointer */
 button.btn-drawn--skip {
@@ -1009,6 +1049,11 @@ button.btn-drawn--skip:focus-visible {
   .scene__palm--edge-left,
   .scene__palm--edge-right {
     height: 38vh;
+  }
+
+  /* both palms shrink here, so the gap between them has to come in with them */
+  .scene .scene__palm--edge-left {
+    right: calc(32vh - 2vw);
   }
 
   .scene__palm--near-left,
