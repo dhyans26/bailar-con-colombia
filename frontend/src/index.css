@@ -817,14 +817,6 @@ body {
   text-shadow: 0 2px 18px rgba(0, 0, 0, 0.85);
 }
 
-.cutscene__speaker {
-  margin: 0 0 0.35rem;
-  font-size: 0.8rem;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--gold);
-}
-
 .cutscene__text {
   margin: 0;
   font-size: clamp(1.05rem, 2.2vw, 1.6rem);

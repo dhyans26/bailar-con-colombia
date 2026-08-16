@@ -153,7 +153,6 @@ function EndCutscene({ passed, score, maxScore, onComplete, onSpeakerChange }) {
   return (
     <div className="cutscene-overlay" ref={rootRef} onClick={advance}>
       <div className="cutscene__box" ref={copyRef} key={index}>
-        <p className="cutscene__speaker">{line.speaker}</p>
         <p className="cutscene__text">{fullText.slice(0, typedCount)}</p>
         {showLicense && (
           <img className="cutscene__license" src={LICENSE_IMAGE} alt="Salsa license" />
