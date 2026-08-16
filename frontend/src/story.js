@@ -43,8 +43,6 @@ export const CLIMB_AUDIO = true
 export const LICENSE_SCORE_THRESHOLD = 0
 
 // {score}, {maxScore}, {threshold} are interpolated by EndCutscene.
-// Empanada is your dance partner, not the one being graded -- Cabí is
-// judging and licensing YOU, the dancer, with Empanada cheering you on.
 export const LICENSE_DIALOGUE_PASS = [
   { speaker: 'Cabí', text: '¡Ay, mira nada más! You really brought it out there on that floor.' },
   { speaker: 'Empanada', text: '¡Fuerte y guapo bailando, mi amigo! I knew you had it in you.' },
