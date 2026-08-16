@@ -34,8 +34,6 @@ function SummitScene({ pose }) {
       {/* palms flank the church and dancer so the sides of the scene aren't bare sky */}
       <div className="scene__palms">
         <PalmTree className="scene__palm scene__palm--edge-left" />
-        <PalmTree className="scene__palm scene__palm--gap" />
-        <PalmTree className="scene__palm scene__palm--near-right" />
         <PalmTree className="scene__palm scene__palm--edge-right" />
       </div>
 

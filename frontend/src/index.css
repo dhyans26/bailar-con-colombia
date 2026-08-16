@@ -209,15 +209,6 @@ body {
   transform: rotate(4deg);
 }
 
-/* fills the gap between the church and the dancer in SummitScene */
-.scene__palm--gap {
-  left: 55%;
-  bottom: 7vh;
-  height: 24vh;
-  opacity: 0.92;
-  transform: rotate(-2deg);
-}
-
 /* ---------- intro ---------- */
 
 .intro {
@@ -667,11 +658,6 @@ body {
   }
 
   .scene__dancer {
-    display: none;
-  }
-
-  /* narrow screens have no room to spare for a mid-scene palm */
-  .scene__palm--gap {
     display: none;
   }
 
