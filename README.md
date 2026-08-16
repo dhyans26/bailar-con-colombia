@@ -2,7 +2,7 @@
 
 A desktop game where you dance salsa in front of your webcam, and computer vision judges your moves!
 
-Real-time pose estimation (YOLO) feeds a LSTM move classifier that recognizes your dance moves (`basic_move`, `idle`, `side_step`, `spin`) live from webcam video. Land the moves the game calls for and earn your salsa license from Señorita Cabí and Señor Empanada, up on the slopes of Monserrate, Bogotá.
+Real-time pose estimation (YOLO) feeds a LSTM move classifier that recognizes your dance moves (`front_and_back`, `idle`, `side_step`, `spin`) live from webcam video. Land the moves the game calls for and earn your salsa license from Señorita Cabí and Señor Empanada, up on the slopes of Monserrate, Bogotá.
 ## How it works
 
 

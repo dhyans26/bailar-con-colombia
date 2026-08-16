@@ -17,6 +17,9 @@
   },
   "build": {
     "appId": "com.macondo.app",
+    "directories": {
+      "output": "release"
+    },
     "files": [
       "dist/**",
       "electron/**"

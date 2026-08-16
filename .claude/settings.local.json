@@ -124,7 +124,16 @@
       "Bash(echo \"exit code: $?\")",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://127.0.0.1:8000/docs --max-time 5)",
       "Bash(pkill -f \"macondo-backend$\")",
-      "Bash(npx electron-builder *)"
+      "Bash(npx electron-builder *)",
+      "Bash(rm -rf dist/mac-arm64 dist/*.dmg dist/*.dmg.blockmap dist/builder-debug.yml)",
+      "Bash(hdiutil attach *)",
+      "Read(//tmp/**)",
+      "Bash(find \"/tmp/macondo_dmg_mount/frontend.app/Contents\" -maxdepth 3 | head -30)",
+      "Read(//private/tmp/macondo_dmg_mount/frontend.app/Contents/**)",
+      "Bash(xattr \"/tmp/macondo_dmg_mount/frontend.app/Contents/MacOS/frontend\")",
+      "Bash(xattr \"/tmp/macondo_dmg_mount/frontend.app\")",
+      "Bash(\"/tmp/macondo_dmg_mount/frontend.app/Contents/MacOS/frontend\")",
+      "Bash(echo \"app exited with code $?\")"
     ],
     "additionalDirectories": [
       "/Users/vedpatel/code/Macondo",
