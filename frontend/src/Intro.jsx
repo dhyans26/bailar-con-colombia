@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import Leaderboard from './Leaderboard.jsx'
-import { BEATS, CLIMB_AUDIO, DEFAULT_HINT, TITLE } from './story.js'
+import DrawnButton from './DrawnButton.jsx'
+import { BEATS, BUTTON_ART, CLIMB_AUDIO, DEFAULT_HINT, DEFAULT_HINT_IMAGE, TITLE } from './story.js'
 
 // story.js to update the lore
 
@@ -172,6 +173,13 @@ function Intro({ onComplete, muted = false }) {
 
   const beat = index >= 0 ? BEATS[index] : null
   const onTitle = index === TITLE_INDEX
+  // drawn prompt on the title card and on every climb beat that leans on the
+  // default "space to continue"; a beat with its own hint line stays as text
+  const hintImage = onTitle
+    ? TITLE.hintImage
+    : beat?.hint
+      ? null
+      : DEFAULT_HINT_IMAGE
 
   return (
     <div className="intro" ref={rootRef} onClick={advance}>
@@ -250,29 +258,32 @@ function Intro({ onComplete, muted = false }) {
             />
           )}
           {beat && <p className="intro__text">{beat.text}</p>}
-          {onTitle ? (
+          {hintImage ? (
             <img
-              className="intro__hint intro__hint--drawn"
-              src={TITLE.hintImage}
-              alt={TITLE.hint}
+              className={
+                onTitle
+                  ? 'intro__hint intro__hint--drawn'
+                  : 'intro__hint intro__hint--drawn intro__hint--climb'
+              }
+              src={hintImage}
+              alt={onTitle ? TITLE.hint : DEFAULT_HINT}
               draggable="false"
             />
           ) : (
-            <p className="intro__hint">{beat?.hint ?? DEFAULT_HINT}</p>
+            <p className="intro__hint">{beat.hint}</p>
           )}
         </div>
       )}
 
-      <button
-        className="intro__skip"
-        type="button"
+      <DrawnButton
+        className="intro__skip btn-drawn--skip"
+        src={BUTTON_ART.skip}
+        label="skip · esc"
         onClick={(e) => {
           e.stopPropagation()
           finish()
         }}
-      >
-        skip · esc
-      </button>
+      />
     </div>
   )
 }

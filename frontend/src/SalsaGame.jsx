@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { supabase } from './supabaseClient.js'
 import EndCutscene from './EndCutscene.jsx'
-import { LICENSE_SCORE_THRESHOLD } from './story.js'
+import DrawnButton from './DrawnButton.jsx'
+import { BUTTON_ART, LICENSE_SCORE_THRESHOLD } from './story.js'
 
 const ROUNDS_PER_GAME = 5
 const READY_MS = 2000
@@ -300,7 +301,12 @@ function SalsaGame({
             {ROUNDS_PER_GAME} rounds. Each round calls out a move, salsa it before time's up to
             score points.
           </p>
-          <button onClick={handleStartClick}>Start Game</button>
+          <DrawnButton
+            className="btn-drawn--start"
+            src={BUTTON_ART.start}
+            label="Start Game"
+            onClick={handleStartClick}
+          />
         </div>
       )}
 
@@ -325,9 +331,13 @@ function SalsaGame({
                 if (e.key === 'Enter') submitName()
               }}
             />
-            <button type="button" onClick={submitName} disabled={!playerName.trim()}>
-              Start Game
-            </button>
+            <DrawnButton
+              className="btn-drawn--start"
+              src={BUTTON_ART.start}
+              label="Start Game"
+              onClick={submitName}
+              disabled={!playerName.trim()}
+            />
           </div>
         </div>
       )}
@@ -378,7 +388,12 @@ function SalsaGame({
           )}
 
           <div className="finished-actions">
-            <button onClick={startGame}>play again</button>
+            <DrawnButton
+              className="btn-drawn--play-again"
+              src={BUTTON_ART.playAgain}
+              label="play again"
+              onClick={startGame}
+            />
             <button onClick={onReturnToMenu}>return to main menu</button>
           </div>
         </div>
