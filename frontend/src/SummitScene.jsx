@@ -33,7 +33,6 @@ function SummitScene({ pose, speaker }) {
       {/* palms flank the church and dancer so the sides of the scene aren't bare sky;
           drawn before the dancer so the empanada reads as in front of the trees */}
       <div className="scene__palms">
-        <img className="scene__palm scene__palm--edge-left" src={publicAsset('/tree_coconut.png')} alt="" />
         <img className="scene__palm scene__palm--edge-right" src={publicAsset('/tree.png')} alt="" />
       </div>
 
