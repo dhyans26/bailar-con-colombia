@@ -4,6 +4,7 @@ import Leaderboard from './Leaderboard.jsx'
 import DrawnButton from './DrawnButton.jsx'
 import { publicAsset } from './publicAsset.js'
 import { BEATS, BUTTON_ART, CLIMB_AUDIO, DEFAULT_HINT, DEFAULT_HINT_IMAGE_BG, TITLE } from './story.js'
+import { MS_PER_CHAR, getAudioCtx, playBeep } from './typewriter.js'
 
 
 // story.js to update the lore
@@ -11,16 +12,23 @@ import { BEATS, BUTTON_ART, CLIMB_AUDIO, DEFAULT_HINT, DEFAULT_HINT_IMAGE_BG, TI
 
 const TITLE_INDEX = -1
 
+// pitch for the climb narration's typewriter blips -- no named speaker to
+// voice it like the end cutscene, so it just gets a neutral tone.
+const NARRATION_FREQ = 340
+
 function Intro({ onComplete, muted = false }) {
   // -1 is the title card, 0..n-1 index into BEATS.
   const [index, setIndex] = useState(TITLE_INDEX)
   const [showText, setShowText] = useState(true)
+  const [typedCount, setTypedCount] = useState(0)
 
   const rootRef = useRef(null)
   const titleRef = useRef(null)
   const copyRef = useRef(null)
   const flashRef = useRef(null)
   const videoRefs = useRef([])
+  const audioCtxRef = useRef(null)
+  const typingTimerRef = useRef(null)
 
   const indexRef = useRef(TITLE_INDEX)
   const showTextRef = useRef(true)
@@ -32,10 +40,44 @@ function Intro({ onComplete, muted = false }) {
     typeof window !== 'undefined' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
+  // the title card has no narration line of its own -- it's just the logo + hint
+  const beat = index >= 0 ? BEATS[index] : null
+  const fullText = beat?.text ?? ''
+  const isTyping = Boolean(beat) && typedCount < fullText.length
+
   useLayoutEffect(() => {
     if (!titleRef.current) return
     gsap.set(titleRef.current, { xPercent: -50 })
   }, [])
+
+  // type the climb narration out one character at a time, once its clip has
+  // finished playing and the text box is up (mirrors the end cutscene's
+  // dialogue typewriter -- see typewriter.js).
+  useLayoutEffect(() => {
+    if (!showText || !beat) return
+
+    if (reduced) {
+      setTypedCount(fullText.length)
+      return undefined
+    }
+
+    setTypedCount(0)
+    let shown = 0
+    const ctx = getAudioCtx(audioCtxRef)
+    const id = setInterval(() => {
+      shown += 1
+      setTypedCount(shown)
+      const ch = fullText[shown - 1]
+      if (ch && !/\s/.test(ch)) playBeep(ctx, NARRATION_FREQ)
+      if (shown >= fullText.length) clearInterval(id)
+    }, MS_PER_CHAR)
+
+    typingTimerRef.current = id
+    return () => {
+      clearInterval(id)
+      typingTimerRef.current = null
+    }
+  }, [showText, beat, fullText, reduced])
 
   useLayoutEffect(() => {
     if (!showText || !copyRef.current) return
@@ -129,8 +171,8 @@ function Intro({ onComplete, muted = false }) {
     [reduced],
   )
 
-  const onEnded = useCallback((beat) => {
-    if (beat !== indexRef.current) return
+  const onEnded = useCallback((beatIndex) => {
+    if (beatIndex !== indexRef.current) return
     showTextRef.current = true
     setShowText(true)
   }, [])
@@ -139,7 +181,7 @@ function Intro({ onComplete, muted = false }) {
     // busy = a clip is crossfading in
     if (doneRef.current || busyRef.current) return
 
-    // mid-clip: jump to the end 
+    // mid-clip: jump to the end
     if (!showTextRef.current) {
       const video = videoRefs.current[indexRef.current]
       if (video && Number.isFinite(video.duration) && video.duration > 0) {
@@ -151,13 +193,20 @@ function Intro({ onComplete, muted = false }) {
       return
     }
 
+    // first press finishes the typewriter instantly; only the next one advances
+    if (isTyping) {
+      if (typingTimerRef.current) clearInterval(typingTimerRef.current)
+      setTypedCount(fullText.length)
+      return
+    }
+
     const next = indexRef.current + 1
     if (next >= BEATS.length) {
       finish()
       return
     }
     playBeat(next)
-  }, [finish, playBeat])
+  }, [finish, playBeat, isTyping, fullText])
 
   useEffect(() => {
     const onKey = (e) => {
@@ -173,7 +222,6 @@ function Intro({ onComplete, muted = false }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [advance, finish])
 
-  const beat = index >= 0 ? BEATS[index] : null
   const onTitle = index === TITLE_INDEX
   // drawn prompt on the title card and on every climb beat that leans on the
   // default "space to continue"; a beat with its own hint line stays as text.
@@ -261,7 +309,7 @@ function Intro({ onComplete, muted = false }) {
               draggable="false"
             />
           )}
-          {beat && <p className="intro__text">{beat.text}</p>}
+          {beat && <p className="intro__text">{fullText.slice(0, typedCount)}</p>}
           {hintImage ? (
             <img
               className={

@@ -10,6 +10,7 @@ import {
   LICENSE_SCORE_THRESHOLD,
 } from './story.js'
 import DrawnButton from './DrawnButton.jsx'
+import { MS_PER_CHAR, getAudioCtx, playBeep } from './typewriter.js'
 
 // story.js to update the lines
 
@@ -20,44 +21,8 @@ function fillTemplate(text, values) {
 // maps a dialogue line's display-name speaker to the scene character it should wiggle
 const SPEAKER_KEY = { 'Cabí': 'cabi', Empanada: 'empanada' }
 
-// typewriter pace -- how long each revealed character stays on screen for
-// before the next one appears. the talking bounce and the beep sfx both
-// ride along with this, so a longer line naturally talks/bounces longer.
-const MS_PER_CHAR = 32
-
 // rough pitch per speaker so the blips read like two different voices
 const SPEAKER_FREQ = { cabi: 240, empanada: 520 }
-
-function playBeep(ctx, speakerKey) {
-  if (!ctx) return
-  try {
-    const base = SPEAKER_FREQ[speakerKey] ?? 340
-    const freq = base * (0.92 + Math.random() * 0.16) // slight jitter so it's not a flat drone
-    const now = ctx.currentTime
-    const osc = ctx.createOscillator()
-    const gain = ctx.createGain()
-    osc.type = 'square'
-    osc.frequency.value = freq
-    gain.gain.setValueAtTime(0.0001, now)
-    gain.gain.exponentialRampToValueAtTime(0.1, now + 0.006)
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045)
-    osc.connect(gain)
-    gain.connect(ctx.destination)
-    osc.start(now)
-    osc.stop(now + 0.05)
-  } catch {
-    // beeps are a nice-to-have, never worth breaking the cutscene over
-  }
-}
-
-function getAudioCtx(ref) {
-  if (typeof window === 'undefined') return null
-  const Ctx = window.AudioContext || window['webkitAudioContext']
-  if (!Ctx) return null
-  if (!ref.current) ref.current = new Ctx()
-  if (ref.current.state === 'suspended') ref.current.resume().catch(() => {})
-  return ref.current
-}
 
 // Cabí talks to Empanada after the last round -- grants (or withholds) his salsa license
 function EndCutscene({ passed, score, maxScore, onComplete, onSpeakerChange }) {
@@ -121,7 +86,7 @@ function EndCutscene({ passed, score, maxScore, onComplete, onSpeakerChange }) {
       shown += 1
       setTypedCount(shown)
       const ch = fullText[shown - 1]
-      if (ch && !/\s/.test(ch)) playBeep(ctx, speakerKey)
+      if (ch && !/\s/.test(ch)) playBeep(ctx, SPEAKER_FREQ[speakerKey] ?? 340)
       if (shown >= fullText.length) {
         clearInterval(id)
         onSpeakerChange?.(null)

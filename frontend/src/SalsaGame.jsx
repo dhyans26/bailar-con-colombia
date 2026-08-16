@@ -110,6 +110,7 @@ function SalsaGame({
   onPlayerNameChange,
   onGameActiveChange,
   onSpeakerChange,
+  onCutsceneActiveChange,
   onReturnToMenu,
   muted = false,
 }) {
@@ -200,6 +201,11 @@ function SalsaGame({
     if (musicRef.current) musicRef.current.muted = muted
   }, [muted])
 
+  // lets App duck the lobby music while Cabí and Empanada are talking
+  useEffect(() => {
+    onCutsceneActiveChange?.(phase === 'finished' && !cutsceneSeen)
+  }, [phase, cutsceneSeen, onCutsceneActiveChange])
+
   useEffect(() => {
     const audio = musicRef.current
     if (!audio) return
@@ -289,7 +295,11 @@ function SalsaGame({
 
   return (
     <div>
-      {phase !== 'ready' && phase !== 'perform' && <h1>Baile para Cabi</h1>}
+      {phase !== 'ready' && phase !== 'perform' && (
+        <h1 className={phase === 'finished' && !cutsceneSeen ? 'title--cutscene' : undefined}>
+          Baile para Cabi
+        </h1>
+      )}
 
       {!health && <p>connecting to backend...</p>}
 

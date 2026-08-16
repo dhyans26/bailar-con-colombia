@@ -628,6 +628,16 @@ body {
   letter-spacing: 0.06em;
 }
 
+/* during the end cutscene, .stage's justify-content: flex-end hugs the
+   title to the right -- pull it over to the left edge instead, so it
+   doesn't crowd Cabí's dialogue box (which sits centered at the bottom). */
+.stage__panel h1.title--cutscene {
+  position: absolute;
+  top: 2.75rem;
+  left: 3rem;
+  margin: 0;
+}
+
 .stage__panel h2 {
   margin: 1rem 0 0.4rem;
   font-size: clamp(1.6rem, 2.8vw, 2.1rem);

@@ -34,6 +34,10 @@ export const BEATS = [
 
 export const INTRO_MUSIC = publicAsset('/music/shakira.mp3')
 export const INTRO_MUSIC_VOLUME = 0.55
+// shakira keeps playing under the end cutscene (game music pauses once
+// you're out of ready/perform) -- duck way down there so it doesn't
+// compete with Cabí and Empanada's dialogue.
+export const INTRO_MUSIC_CUTSCENE_VOLUME = 0.08
 
 export const DEFAULT_HINT = 'space to continue'
 
@@ -58,7 +62,7 @@ export const CLIMB_AUDIO = true
 
 // ---------- end-screen license cutscene ----------
 
-export const LICENSE_SCORE_THRESHOLD = 350
+export const LICENSE_SCORE_THRESHOLD = 322
 
 // {score}, {maxScore}, {threshold} are interpolated by EndCutscene.
 export const LICENSE_DIALOGUE_PASS = [

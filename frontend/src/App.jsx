@@ -3,7 +3,7 @@ import gsap from 'gsap'
 import SalsaGame from './SalsaGame.jsx'
 import Intro from './Intro.jsx'
 import SummitScene from './SummitScene.jsx'
-import { INTRO_MUSIC, INTRO_MUSIC_VOLUME } from './story.js'
+import { INTRO_MUSIC, INTRO_MUSIC_VOLUME, INTRO_MUSIC_CUTSCENE_VOLUME } from './story.js'
 
 const API_BASE = 'http://127.0.0.1:8000'
 const WS_URL = 'ws://127.0.0.1:8000/ws/state'
@@ -101,6 +101,7 @@ function App() {
   const [gameActive, setGameActive] = useState(false)
   const [muted, setMuted] = useState(false)
   const [speaker, setSpeaker] = useState(null) // 'cabi' | 'empanada' | null -- who's talking in the end cutscene
+  const [cutsceneActive, setCutsceneActive] = useState(false)
   const stageRef = useRef(null)
   const lobbyMusicRef = useRef(null)
   const mutedRef = useRef(false)
@@ -198,6 +199,14 @@ function App() {
     }
   }, [gameActive])
 
+  // shakira keeps playing under the end cutscene -- duck it way down so it
+  // doesn't fight with Cabí and Empanada's dialogue, then bring it back up after.
+  useEffect(() => {
+    const audio = lobbyMusicRef.current
+    if (!audio) return
+    audio.volume = cutsceneActive ? INTRO_MUSIC_CUTSCENE_VOLUME : INTRO_MUSIC_VOLUME
+  }, [cutsceneActive])
+
   useEffect(() => {
     mutedRef.current = muted
     if (lobbyMusicRef.current) lobbyMusicRef.current.muted = muted
@@ -268,6 +277,7 @@ function App() {
                   onPlayerNameChange={setPlayerName}
                   onGameActiveChange={handleGameActiveChange}
                   onSpeakerChange={setSpeaker}
+                  onCutsceneActiveChange={setCutsceneActive}
                   onReturnToMenu={() => {
                     setPlayerName('')
                     setStage('intro')
