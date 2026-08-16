@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <!-- https://github.com/electron/electron-notarize#prerequisites -->
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+    <!-- https://github.com/electron-userland/electron-builder/issues/3940 -->
+    <key>com.apple.security.cs.disable-library-validation</key>
+    <true/>
+    <!-- backend/pose_utils.py opens the webcam (via the spawned macondo-backend
+    child process) for pose detection. Under hardened runtime, TCC won't even
+    show the camera permission prompt to the app's "responsible" process
+    without this entitlement; access just silently fails instead, with no
+    dialog and no error surfaced anywhere in the UI. -->
+    <key>com.apple.security.device.camera</key>
+    <true/>
+  </dict>
+</plist>

@@ -24,10 +24,20 @@ export default async function afterSign(context) {
   }
 
   const appPath = path.join(context.appOutDir, `${context.packager.appInfo.productFilename}.app`);
-  const entitlements = path.join(
-    context.packager.projectDir,
-    "node_modules/app-builder-lib/templates/entitlements.mac.plist"
-  );
+  // Use the project's own entitlements rather than electron-builder's generic
+  // default template -- the default only grants JIT/unsigned-memory/library-
+  // validation, not camera access, which the pose-detection backend needs.
+  //
+  // Deliberately hardcoded here instead of read from package.json's
+  // build.mac.entitlements: setting that key (plus mac.hardenedRuntime) makes
+  // electron-builder do its own nested-component signing pass *during
+  // packaging*, before this hook ever runs -- which was observed to corrupt
+  // Electron Framework's bundled libffmpeg.dylib signature (AMFI: "has no CMS
+  // blob... Unrecoverable CT signature issue", crashing the app at launch).
+  // Keeping those keys unset leaves packaging's signing skipped entirely, and
+  // this hook does the one signing pass that actually needs to happen for
+  // unsigned/ad-hoc local builds.
+  const entitlements = path.join(context.packager.projectDir, "build/entitlements.mac.plist");
   if (!existsSync(appPath) || !existsSync(entitlements)) return;
 
   console.log(`[afterSign] re-signing ad-hoc with entitlements: ${appPath}`);

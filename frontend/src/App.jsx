@@ -102,6 +102,7 @@ function App() {
   const [muted, setMuted] = useState(false)
   const [speaker, setSpeaker] = useState(null) // 'cabi' | 'empanada' | null -- who's talking in the end cutscene
   const [cutsceneActive, setCutsceneActive] = useState(false)
+  const [introTypingActive, setIntroTypingActive] = useState(false)
   const stageRef = useRef(null)
   const lobbyMusicRef = useRef(null)
   const mutedRef = useRef(false)
@@ -199,13 +200,14 @@ function App() {
     }
   }, [gameActive])
 
-  // shakira keeps playing under the end cutscene -- duck it way down so it
-  // doesn't fight with Cabí and Empanada's dialogue, then bring it back up after.
+  // shakira keeps playing under the end cutscene -- and under the intro's
+  // mountain climb narration -- so duck it way down while either is typing
+  // dialogue out, then bring it back up after.
   useEffect(() => {
     const audio = lobbyMusicRef.current
     if (!audio) return
-    audio.volume = cutsceneActive ? INTRO_MUSIC_CUTSCENE_VOLUME : INTRO_MUSIC_VOLUME
-  }, [cutsceneActive])
+    audio.volume = cutsceneActive || introTypingActive ? INTRO_MUSIC_CUTSCENE_VOLUME : INTRO_MUSIC_VOLUME
+  }, [cutsceneActive, introTypingActive])
 
   useEffect(() => {
     mutedRef.current = muted
@@ -259,7 +261,11 @@ function App() {
       <SummitScene pose={pose} speaker={speaker} />
 
       {stage === 'intro' && (
-        <Intro onComplete={() => setStage('game')} muted={muted} />
+        <Intro
+          onComplete={() => setStage('game')}
+          muted={muted}
+          onTypingActiveChange={setIntroTypingActive}
+        />
       )}
 
       {stage === 'game' && (

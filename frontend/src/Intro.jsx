@@ -16,7 +16,7 @@ const TITLE_INDEX = -1
 // voice it like the end cutscene, so it just gets a neutral tone.
 const NARRATION_FREQ = 340
 
-function Intro({ onComplete, muted = false }) {
+function Intro({ onComplete, muted = false, onTypingActiveChange }) {
   // -1 is the title card, 0..n-1 index into BEATS.
   const [index, setIndex] = useState(TITLE_INDEX)
   const [showText, setShowText] = useState(true)
@@ -44,6 +44,14 @@ function Intro({ onComplete, muted = false }) {
   const beat = index >= 0 ? BEATS[index] : null
   const fullText = beat?.text ?? ''
   const isTyping = Boolean(beat) && typedCount < fullText.length
+
+  // shakira gets ducked (see App.jsx) while the climb narration is typing out,
+  // same treatment as the end cutscene's dialogue.
+  useEffect(() => {
+    onTypingActiveChange?.(isTyping)
+  }, [isTyping, onTypingActiveChange])
+
+  useEffect(() => () => onTypingActiveChange?.(false), [onTypingActiveChange])
 
   useLayoutEffect(() => {
     if (!titleRef.current) return
