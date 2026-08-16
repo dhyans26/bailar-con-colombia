@@ -28,7 +28,10 @@ export const BEATS = [
   {
     video: publicAsset('/climb/climb_4.mp4'),
     text: 'This is your opportunity to become the best salsa bailando el mundo mirar, from the bonito montañas de Bogotá',
-    hint: 'press space to BAILARRR',
+    // the last beat hands off to the game, so it gets its own drawn prompt
+    // instead of the default one; the hint line below doubles as its alt text
+    hintImage: publicAsset('/tiempo-bailar.png'),
+    hint: 'tiempo para bailar -- press space to continue',
   },
 ]
 

@@ -6,6 +6,10 @@
   --grass-dark: #3c4c1e;
   --ink: #f4efe6;
   --gold: #f2c14e;
+  /* sampled straight out of tile_bg.png -- the drawn card's fill and its
+     border ink, which doubles as the text colour on top of it */
+  --card-fill: #eba37a;
+  --card-ink: #4e311c;
   --font: 'Changa Variable', system-ui, sans-serif;
 
   color-scheme: dark;
@@ -484,6 +488,16 @@ body {
   margin: calc(1.2rem - var(--hint-w) * 0.256) auto calc(var(--hint-w) * -0.157);
 }
 
+/* the last climb beat's own prompt. Its ink covers only the middle 55% of the
+   canvas against the default art's 93%, so the frame runs correspondingly wider
+   to land the drawing at a comparable size, and the margins cancel this one's
+   own padding: ~19% of the width above the ink, ~24% below. */
+.intro__hint.intro__hint--bailar {
+  --hint-w: min(32rem, 72vw);
+  width: var(--hint-w);
+  margin: calc(1.2rem - var(--hint-w) * 0.19) auto calc(var(--hint-w) * -0.244);
+}
+
 /* hovering stops the breathing and holds it at full strength */
 .intro__hint.intro__hint--drawn:hover,
 .cutscene__hint.cutscene__hint--drawn:hover {
@@ -608,6 +622,51 @@ body {
 
 .name-prompt-card button:disabled {
   opacity: 0.45;
+}
+
+/* ---------- the drawn card panel ---------- */
+
+/* tile_bg.png is a single hand-inked frame rather than a repeating texture, so
+   it stretches to the box instead of tiling -- the wobble in the line absorbs
+   the distortion in a way a straight border never would. Everything below
+   undoes the flat-dark-card look these panels ship with; the rules sit after
+   the .name-prompt-card block on purpose, since they match its specificity and
+   win on order. Add `card-drawn` alongside a panel's own class to opt it in. */
+.card-drawn {
+  border: 0;
+  border-radius: 0;
+  background: url('../tile_bg.png') center / 100% 100% no-repeat;
+  box-shadow: none;
+  /* traces the drawn edge rather than the box, since the art carries its own
+     transparent margin -- roughly 5% of the canvas on each side */
+  filter: drop-shadow(0 14px 30px rgba(0, 0, 0, 0.45));
+  /* light ink would sit at about 1.9:1 against the fill; the border's brown
+     clears 6:1, and the panel's outline text-shadow only muddies it */
+  color: var(--card-ink);
+  text-shadow: none;
+}
+
+/* clears the drawn frame plus the transparent margin the art carries */
+.card-drawn.name-prompt-card {
+  padding: 2.5rem 2.75rem 2.25rem;
+}
+
+/* the drawn buttons are artwork with no chrome, so they stay out of this */
+.card-drawn input,
+.card-drawn button:not(.btn-drawn) {
+  border-color: rgba(78, 49, 28, 0.5);
+  background: rgba(255, 250, 244, 0.5);
+  color: var(--card-ink);
+}
+
+.card-drawn input::placeholder {
+  color: rgba(78, 49, 28, 0.55);
+}
+
+.card-drawn button:not(.btn-drawn):not(:disabled):hover {
+  border-color: var(--card-ink);
+  background: rgba(255, 250, 244, 0.8);
+  color: var(--card-ink);
 }
 
 /* ---------- game ---------- */
@@ -869,18 +928,27 @@ body {
   gap: 0.25rem;
 }
 
+/* the box takes the drawing's own proportions rather than a square, so the
+   art meets all four edges -- the fill below clips upward from the bottom
+   edge, and letterboxing would have it climbing through empty space first */
 .dance-meter__star {
+  --star-w: 2.9rem;
   position: relative;
   display: block;
-  width: 2.6rem;
-  height: 2.6rem;
-  font-size: 2.6rem;
-  line-height: 1;
-  color: rgba(244, 239, 230, 0.35);
+  width: var(--star-w);
+  aspect-ratio: 364 / 303;
 }
 
-.dance-meter__star-outline {
+.dance-meter__star-art {
   display: block;
+  width: var(--star-w);
+  aspect-ratio: 364 / 303;
+  user-select: none;
+}
+
+/* the empty state is the same drawing knocked back to a ghost of itself */
+.dance-meter__star-outline {
+  filter: grayscale(1) brightness(1.35) opacity(0.32);
 }
 
 .dance-meter__star-fill {
@@ -889,9 +957,17 @@ body {
   bottom: 0;
   width: 100%;
   overflow: hidden;
-  color: var(--gold);
-  transition: height 0.15s ease-out; 
+  transition: height 0.15s ease-out;
   /* jitters alot so transition helps */
+}
+
+/* pinned to the bottom of the clip window, so shrinking the window trims the
+   star from the top down and the colour appears to pour in from below */
+.dance-meter__star-fill .dance-meter__star-art {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45));
 }
 
 .dance-meter__score {

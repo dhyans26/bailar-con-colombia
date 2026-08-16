@@ -231,15 +231,25 @@ function Intro({ onComplete, muted = false, onTypingActiveChange }) {
   }, [advance, finish])
 
   const onTitle = index === TITLE_INDEX
-  // drawn prompt on the title card and on every climb beat that leans on the
-  // default "space to continue"; a beat with its own hint line stays as text.
-  // The climb runs the filled-in art -- the outline alone gets lost in the
-  // bright stretches of the footage.
+  // drawn prompt on the title card and on every climb beat: a beat's own
+  // `hintImage` wins, then the default "space to continue" art, and a beat that
+  // sets only a `hint` string falls back to plain text. The climb runs the
+  // filled-in art -- the outline alone gets lost in the bright stretches of the
+  // footage.
   const hintImage = onTitle
     ? TITLE.hintImage
-    : beat?.hint
-      ? null
-      : DEFAULT_HINT_IMAGE_BG
+    : beat?.hintImage
+      ? beat.hintImage
+      : beat?.hint
+        ? null
+        : DEFAULT_HINT_IMAGE_BG
+
+  // each drawing is cropped differently, so the placement class goes with it
+  const hintClass = onTitle
+    ? 'intro__hint intro__hint--drawn'
+    : beat?.hintImage
+      ? 'intro__hint intro__hint--drawn intro__hint--bailar'
+      : 'intro__hint intro__hint--drawn intro__hint--climb'
 
   return (
     <div className="intro" ref={rootRef} onClick={advance}>
@@ -320,13 +330,9 @@ function Intro({ onComplete, muted = false, onTypingActiveChange }) {
           {beat && <p className="intro__text">{fullText.slice(0, typedCount)}</p>}
           {hintImage ? (
             <img
-              className={
-                onTitle
-                  ? 'intro__hint intro__hint--drawn'
-                  : 'intro__hint intro__hint--drawn intro__hint--climb'
-              }
+              className={hintClass}
               src={hintImage}
-              alt={onTitle ? TITLE.hint : DEFAULT_HINT}
+              alt={onTitle ? TITLE.hint : beat?.hint ?? DEFAULT_HINT}
               draggable="false"
             />
           ) : (

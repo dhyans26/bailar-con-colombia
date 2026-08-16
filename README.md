@@ -56,4 +56,4 @@ npm run electron:dev
 
 ## Acknowledgments
 
-Thank u so much to Tati for teaching us salsa and farming data, and to Dhamari for farming data!!!
+Thank u so much to Tati and Dhamari for helping train our model
