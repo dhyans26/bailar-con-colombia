@@ -188,7 +188,13 @@ function Intro({ onComplete, muted = false }) {
       <div className="scene__ground" />
 
       <div className="intro__title-card">
-        <img src={TITLE.image} alt="" ref={titleRef} draggable="false" />
+        <img
+          className="intro__church"
+          src={TITLE.image}
+          alt=""
+          ref={titleRef}
+          draggable="false"
+        />
         <img
           className="intro__capybara"
           src="/sra-capybara-con-dress.png"
@@ -236,8 +242,14 @@ function Intro({ onComplete, muted = false }) {
           ref={copyRef}
           key={index}
         >
-          {onTitle && <h1 className="intro__heading">{TITLE.title}</h1>}
-          {onTitle && <p className="intro__subtitle">{TITLE.subtitle}</p>}
+          {onTitle && (
+            <img
+              className="intro__logo"
+              src={TITLE.logo}
+              alt={TITLE.title}
+              draggable="false"
+            />
+          )}
           {beat && <p className="intro__text">{beat.text}</p>}
           <p className="intro__hint">
             {(onTitle ? TITLE.hint : beat?.hint) ?? DEFAULT_HINT}
