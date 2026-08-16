@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import Leaderboard from './Leaderboard.jsx'
 import { supabase } from './supabaseClient.js'
 
 const ROUNDS_PER_GAME = 5
@@ -52,7 +51,6 @@ function DanceMeter({ score, maxScore }) {
       role="img"
       aria-label={`${score} of ${maxScore} points, ${starsEarned.toFixed(1)} of ${totalStars} stars`}
     >
-      <p className="dance-meter__label">Just Dance Meter</p>
       <div className="dance-meter__stars" aria-hidden="true">
         {Array.from({ length: totalStars }).map((_, i) => {
           const fill = Math.max(0, Math.min(1, starsEarned - i)) * 100
@@ -111,7 +109,6 @@ function SalsaGame({
   const [target, setTarget] = useState(null)
   const [roundScores, setRoundScores] = useState([])
   const [submitState, setSubmitState] = useState('idle') // idle | saving | done | error
-  const [boardRefresh, setBoardRefresh] = useState(0)
   const [liveProb, setLiveProb] = useState(0) // best confidence seen this round, mirrored for live rendering
   const [showNamePrompt, setShowNamePrompt] = useState(false)
   // 3-2-1-START! label shown only during round 1's ready phase; null the rest of the time.
@@ -279,14 +276,9 @@ function SalsaGame({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase])
 
-  // ref the standings once the fresh score is actually in the database
-  useEffect(() => {
-    if (submitState === 'done') setBoardRefresh((n) => n + 1)
-  }, [submitState])
-
   return (
     <div>
-      {phase !== 'ready' && phase !== 'perform' && <h1>Baile para Gabi</h1>}
+      {phase !== 'ready' && phase !== 'perform' && <h1>Baile para Cabi</h1>}
 
       {!health && <p>connecting to backend...</p>}
 
@@ -347,35 +339,26 @@ function SalsaGame({
       )}
 
       {phase === 'finished' && (
-        <div>
+        <div className="finished">
           <div className="finished-summary">
-            <h2>final score: {totalScore} / {maxScore}</h2>
             <DanceMeter score={totalScore} maxScore={maxScore} />
           </div>
-          <table border="1" cellPadding="4">
-            <thead>
-              <tr>
-                <th>round</th>
-                <th>move</th>
-                <th>score</th>
-              </tr>
-            </thead>
-            <tbody>
-              {roundScores.map((r, i) => (
-                <tr key={i}>
-                  <td>{i + 1}</td>
-                  <td>{displayName(r.move)}</td>
-                  <td>{r.score}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
 
-          {submitState === 'saving' && <p>submitting your score to the leaderboard...</p>}
-          {submitState === 'done' && <p>score saved to the leaderboard!</p>}
-          {submitState === 'error' && <p>couldn't save your score to the leaderboard.</p>}
+          <ul className="finished-rounds">
+            {roundScores.map((r, i) => (
+              <li key={i}>
+                <span className="finished-rounds__round">{i + 1}</span>
+                <span className="finished-rounds__move">{displayName(r.move)}</span>
+                <span className="finished-rounds__score">{r.score}</span>
+              </li>
+            ))}
+          </ul>
 
-          <Leaderboard refreshSignal={boardRefresh} />
+          {submitState === 'saving' && <p className="finished-status">submitting your score...</p>}
+          {submitState === 'done' && <p className="finished-status">score saved!</p>}
+          {submitState === 'error' && (
+            <p className="finished-status finished-status--error">couldn't save your score.</p>
+          )}
 
           <div className="finished-actions">
             <button onClick={startGame}>play again</button>

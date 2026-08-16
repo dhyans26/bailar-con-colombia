@@ -316,7 +316,8 @@ body {
   position: absolute;
   top: clamp(1.5rem, 6vh, 3.5rem);
   right: clamp(1.5rem, 4vw, 3.5rem);
-  width: min(24rem, 40vw);
+  width: fit-content;
+  max-width: min(24rem, 84vw);
   max-height: 64vh;
   overflow: auto;
   padding: 1.4rem 1.5rem;
@@ -562,6 +563,12 @@ body {
   opacity: 0.45;
 }
 
+.finished {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
 .finished-summary {
   display: flex;
   align-items: center;
@@ -573,11 +580,55 @@ body {
   margin: 0;
 }
 
+.finished-rounds {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.95rem;
+}
+
+.finished-rounds li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid rgba(244, 239, 230, 0.12);
+}
+
+.finished-rounds li:last-child {
+  border-bottom: none;
+}
+
+.finished-rounds__round {
+  width: 1.4rem;
+  opacity: 0.55;
+  font-variant-numeric: tabular-nums;
+}
+
+.finished-rounds__move {
+  flex: 1;
+}
+
+.finished-rounds__score {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--gold);
+}
+
+.finished-status {
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+.finished-status--error {
+  color: #e6836f;
+}
+
 .finished-actions {
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
-  margin-top: 1.25rem;
 }
 
 /* dance o meter like just dance */
