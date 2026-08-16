@@ -289,7 +289,16 @@ function SalsaGame({
 
   return (
     <div>
-      {phase !== 'ready' && phase !== 'perform' && <h1>Baile para Cabi</h1>}
+      {phase !== 'ready' && phase !== 'perform' && (
+        <h1 className="game__title">
+          <img
+            className="game__title-logo"
+            src={publicAsset('/baile_logo.png')}
+            alt="Baile Salsa para Cabí con Sr Empanada"
+            draggable="false"
+          />
+        </h1>
+      )}
 
       {!health && <p>connecting to backend...</p>}
 
@@ -303,8 +312,7 @@ function SalsaGame({
       {moves.length > 0 && phase === 'lobby' && (
         <div>
           <p>
-            {ROUNDS_PER_GAME} rounds. Each round calls out a move, salsa it before time's up to
-            score points.
+            You have five rounds to bailar your heart out and get as many points as you can...
           </p>
           <DrawnButton
             className="btn-drawn--start"
