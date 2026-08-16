@@ -78,7 +78,14 @@
       "Bash(echo \"grep exit=$?\")",
       "Bash(sed -i '' 's/5178/5179/' measure4.mjs)",
       "Bash(node debug2.mjs)",
-      "Bash(node -e \"console.log\\(require.resolve\\('playwright'\\)\\)\")"
+      "Bash(node -e \"console.log\\(require.resolve\\('playwright'\\)\\)\")",
+      "Bash(curl -sf http://localhost:5173/ -o /dev/null)",
+      "Bash(osascript -e 'tell application \"Google Chrome\" to activate')",
+      "Bash(open -a \"Google Chrome\" \"http://localhost:5173/\")",
+      "Bash(open \"http://localhost:5173/\")",
+      "Bash(screencapture -x /private/tmp/claude-502/-Users-vedpatel-code-Macondo/dc1de4a8-3121-477e-bf6b-04d7c6576080/scratchpad/grass_screenshot.png)",
+      "Bash(system_profiler SPDisplaysDataType)",
+      "Bash([ -x \"$CHROME\" ])"
     ],
     "additionalDirectories": [
       "/Users/vedpatel/code/Macondo",
