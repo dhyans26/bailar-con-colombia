@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
+import Leaderboard from './Leaderboard.jsx'
 import { BEATS, CLIMB_AUDIO, DEFAULT_HINT, TITLE } from './story.js'
 
 // The ride up Monserrate. A title card, then one gondola clip per beat: the
@@ -195,6 +196,15 @@ function Intro({ onComplete, muted = false }) {
       <div className="intro__title-card">
         <img src={TITLE.image} alt="" ref={titleRef} draggable="false" />
       </div>
+
+      {/* The main menu: the leaderboard sits on the title card so scores are
+          visible before the climb starts. Clicks on it stop here -- reading
+          the board must not advance the intro. */}
+      {onTitle && (
+        <div className="intro__leaderboard" onClick={(e) => e.stopPropagation()}>
+          <Leaderboard refreshSignal={0} />
+        </div>
+      )}
 
       {BEATS.map((b, i) => (
         <video

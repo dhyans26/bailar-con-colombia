@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import Leaderboard from './Leaderboard.jsx'
 import { supabase } from './supabaseClient.js'
 
 const ROUNDS_PER_GAME = 5
@@ -106,6 +107,7 @@ function SalsaGame({
   playerName,
   onPlayerNameChange,
   onGameActiveChange,
+  onReturnToMenu,
   muted = false,
 }) {
   const [phase, setPhase] = useState('lobby') // lobby | ready | perform | finished
@@ -113,6 +115,9 @@ function SalsaGame({
   const [target, setTarget] = useState(null)
   const [roundScores, setRoundScores] = useState([])
   const [submitState, setSubmitState] = useState('idle') // idle | saving | done | error
+  // Bumped once a finished score has been saved, so the standings shown after
+  // the game include the score that was just submitted.
+  const [boardRefresh, setBoardRefresh] = useState(0)
   const [liveProb, setLiveProb] = useState(0) // best confidence seen this round, mirrored for live rendering
   // The name prompt shown when Start Game is clicked with no name captured yet.
   const [showNamePrompt, setShowNamePrompt] = useState(false)
@@ -273,6 +278,12 @@ function SalsaGame({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase])
 
+  // Refresh the standings once the fresh score is actually in the database
+  // (the refetch is async too, so bumping on phase alone would race the upsert).
+  useEffect(() => {
+    if (submitState === 'done') setBoardRefresh((n) => n + 1)
+  }, [submitState])
+
   return (
     <div>
       {phase !== 'ready' && phase !== 'perform' && <h1>Salsa Skills Challenge</h1>}
@@ -366,9 +377,12 @@ function SalsaGame({
           {submitState === 'done' && <p>score saved to the leaderboard!</p>}
           {submitState === 'error' && <p>couldn't save your score to the leaderboard.</p>}
 
-          <button style={{ marginTop: '8px' }} onClick={startGame}>
-            play again
-          </button>
+          <Leaderboard refreshSignal={boardRefresh} />
+
+          <div className="finished-actions">
+            <button onClick={startGame}>play again</button>
+            <button onClick={onReturnToMenu}>return to main menu</button>
+          </div>
         </div>
       )}
     </div>

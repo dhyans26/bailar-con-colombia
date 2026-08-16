@@ -3,7 +3,6 @@ import gsap from 'gsap'
 import SalsaGame from './SalsaGame.jsx'
 import Intro from './Intro.jsx'
 import SummitScene from './SummitScene.jsx'
-import Leaderboard from './Leaderboard.jsx'
 import { INTRO_MUSIC, INTRO_MUSIC_VOLUME } from './story.js'
 
 const API_BASE = 'http://127.0.0.1:8000'
@@ -93,7 +92,7 @@ function MonitorView({ health, pose, prediction, error }) {
 
 function App() {
   const [stage, setStage] = useState('intro') // intro | game
-  const [view, setView] = useState('game') // game | leaderboard | monitor
+  const [view, setView] = useState('game') // game | monitor
   const [playerName, setPlayerName] = useState('')
   const [health, setHealth] = useState(null)
   const [pose, setPose] = useState(null)
@@ -279,10 +278,13 @@ function App() {
                   playerName={playerName}
                   onPlayerNameChange={setPlayerName}
                   onGameActiveChange={handleGameActiveChange}
+                  onReturnToMenu={() => {
+                    setPlayerName('')
+                    setStage('intro')
+                  }}
                   muted={muted}
                 />
               )}
-              {view === 'leaderboard' && <Leaderboard refreshSignal={0} />}
               {view === 'monitor' && (
                 <MonitorView health={health} pose={pose} prediction={prediction} error={error} />
               )}
@@ -292,13 +294,6 @@ function App() {
           <nav className="tab-dock">
             <button className="tab-dock__btn" onClick={() => setView('game')} disabled={view === 'game'}>
               Salsa Game
-            </button>
-            <button
-              className="tab-dock__btn"
-              onClick={() => setView('leaderboard')}
-              disabled={view === 'leaderboard'}
-            >
-              Leaderboard
             </button>
             <button className="tab-dock__btn" onClick={() => setView('monitor')} disabled={view === 'monitor'}>
               Monitor
