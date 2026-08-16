@@ -1,12 +1,4 @@
-# FastAPI service exposing the live webcam pipeline: YOLO pose-estimation
-# keypoints and the rolling-window LSTM move prediction built on top of them.
-#
-# Pose estimation + LSTM inference are blocking (cv2 + torch), so they run on
-# a background thread; the API just reads the latest cached result. This
-# mirrors the loop in test_lstm_model.py, minus the cv2 GUI.
-#
-# Run with:
-#   uvicorn api:app --reload --port 8000
+# uvicorn api:app --reload --port 8000
 
 import asyncio
 import threading

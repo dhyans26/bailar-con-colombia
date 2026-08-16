@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react'
 import { supabase, LEADERBOARD_TABLE } from './supabaseClient.js'
 
-const TOP_N = 10
+const TOP_N = 10 // how many top g's 
 
-// `refreshSignal` is any value that changes when the parent wants a refetch
-// (e.g. bump a counter after submitting a new score).
 function Leaderboard({ refreshSignal }) {
   const [rows, setRows] = useState(null)
   const [error, setError] = useState(null)

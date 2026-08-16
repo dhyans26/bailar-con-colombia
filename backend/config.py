@@ -1,8 +1,6 @@
 import os
 
-# -1 auto-picks the first camera that is a live sensor, skipping idle virtual
-# cameras like OBS's -- see pose_utils.resolve_camera_index. Set the
-# CAMERA_INDEX env var to a real index to pin one instead.
+# -1 autopicks
 CAMERA_INDEX = int(os.environ.get("CAMERA_INDEX", -1))
 FRAME_SCALE = 0.5
 KPT_CONF_THRES = 0.3

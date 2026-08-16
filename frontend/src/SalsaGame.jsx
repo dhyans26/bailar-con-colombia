@@ -7,8 +7,10 @@ const ROUNDS_PER_GAME = 5
 const READY_MS = 2000
 const PERFORM_MS = 2000
 
-// One entry per track in public/game-music -- each game starts with a random
-// pick, so dropping a new song in the folder means adding it to this list too.
+// 3-2-1-start countdown
+const COUNTDOWN_STEPS = ['3', '2', '1', 'START!']
+const COUNTDOWN_STEP_MS = 700
+
 const GAME_MUSIC_TRACKS = [
   encodeURI('/game-music/La Vida Es Un Carnaval - Celia Cruz [0nBFWzpWXuM].opus'),
   encodeURI('/game-music/markanthony.mp3'),
@@ -20,9 +22,6 @@ function pickTrack() {
   return GAME_MUSIC_TRACKS[Math.floor(Math.random() * GAME_MUSIC_TRACKS.length)]
 }
 
-// "idle" is the model's do-nothing/rest class, not a move to call out and
-// score against -- every other trained label is fair game. New labels
-// recorded via dataset_recorder.py + train_lstm.py show up automatically.
 function playableMoves(labels) {
   return (labels || []).filter((label) => label !== 'idle')
 }
@@ -39,15 +38,10 @@ function pickTarget(moves, avoid) {
   return options[Math.floor(Math.random() * options.length)]
 }
 
-// 100 points = 1 star, so a 5-round game (max 500) tops out at 5 stars.
+// 100 points = 1 star, so a 5 round game is 5 stars
 const POINTS_PER_STAR = 100
 
-// A live star meter: fills up as you dance instead of only revealing the
-// score at the end of a round, so there's something to react to in the
-// moment. `score` can include an in-progress round's live-tracked estimate.
-// Stacked vertically (bottom star fills first, like a level rising) so it
-// reads at a glance from across the room instead of needing to be read
-// left-to-right.
+// just dance meter that fills up as u gain scores
 function DanceMeter({ score, maxScore }) {
   const totalStars = maxScore / POINTS_PER_STAR
   const starsEarned = Math.max(0, Math.min(totalStars, score / POINTS_PER_STAR))
@@ -79,18 +73,20 @@ function DanceMeter({ score, maxScore }) {
   )
 }
 
-// The move to nail this round, blown up to fill the whole screen -- portalled
-// straight to <body> so it escapes the boxed side panel (whose backdrop-filter
-// would otherwise clip a position:fixed overlay to its own small width) and
-// is actually readable from a few feet back, mid-dance.
-function DanceCallout({ phase, round, target, poseDetected, liveScore, maxScore }) {
+// the move to nail this round
+function DanceCallout({ round, target, countdown, poseDetected, liveScore, maxScore }) {
   return createPortal(
     <div className="dance-callout">
       <p className="dance-callout__round">
         round {round + 1} / {ROUNDS_PER_GAME}
       </p>
-      <p className="dance-callout__go">{phase === 'ready' ? 'get ready...' : 'GO!'}</p>
-      <p className="dance-callout__move">{displayName(target)}</p>
+      {countdown ? (
+        <p className="dance-callout__countdown" key={countdown}>
+          {countdown}
+        </p>
+      ) : (
+        <p className="dance-callout__move">{displayName(target)}</p>
+      )}
       {!poseDetected && <p className="dance-callout__warning">step into frame!</p>}
       <div className="dance-callout__meter">
         <DanceMeter score={liveScore} maxScore={maxScore} />
@@ -115,21 +111,17 @@ function SalsaGame({
   const [target, setTarget] = useState(null)
   const [roundScores, setRoundScores] = useState([])
   const [submitState, setSubmitState] = useState('idle') // idle | saving | done | error
-  // Bumped once a finished score has been saved, so the standings shown after
-  // the game include the score that was just submitted.
   const [boardRefresh, setBoardRefresh] = useState(0)
   const [liveProb, setLiveProb] = useState(0) // best confidence seen this round, mirrored for live rendering
-  // The name prompt shown when Start Game is clicked with no name captured yet.
   const [showNamePrompt, setShowNamePrompt] = useState(false)
+  // 3-2-1-START! label shown only during round 1's ready phase; null the rest of the time.
+  const [countdownLabel, setCountdownLabel] = useState(null)
   const maxProbRef = useRef(0)
   const submittedRef = useRef(false)
   const musicRef = useRef(null)
   const prevPhaseRef = useRef(phase)
   const trackRef = useRef(null)
   const lastTrackRef = useRef(null)
-  // App owns the mute flag (the M hotkey lives there, since it is the only
-  // place that can see every track at once) and hands it down; the ref mirror
-  // is for the setup effect, which must not re-run when it flips.
   const mutedRef = useRef(muted)
 
   const moves = playableMoves(health && health.labels)
@@ -144,9 +136,7 @@ function SalsaGame({
     setPhase('ready')
   }
 
-  // Start Game asks for a name first if one hasn't been captured yet -- the
-  // score submitted at the end of the game needs it, so get it up front
-  // rather than silently dropping the score on the leaderboard.
+  // start game asks for a name first if one hasn't been captured yet
   const handleStartClick = () => {
     if (!playerName.trim()) {
       setShowNamePrompt(true)
@@ -161,17 +151,29 @@ function SalsaGame({
     startGame()
   }
 
-  // ready -> perform after a countdown
+  // ready -> perform: round 1 gets a 3-2-1-start countdown
   useEffect(() => {
     if (phase !== 'ready') return
-    const id = setTimeout(() => setPhase('perform'), READY_MS)
-    return () => clearTimeout(id)
-  }, [phase])
+    if (round !== 0) {
+      const id = setTimeout(() => setPhase('perform'), READY_MS)
+      return () => clearTimeout(id)
+    }
+    let step = 0
+    setCountdownLabel(COUNTDOWN_STEPS[0])
+    const id = setInterval(() => {
+      step += 1
+      if (step < COUNTDOWN_STEPS.length) {
+        setCountdownLabel(COUNTDOWN_STEPS[step])
+      } else {
+        clearInterval(id)
+        setCountdownLabel(null)
+        setPhase('perform')
+      }
+    }, COUNTDOWN_STEP_MS)
+    return () => clearInterval(id)
+  }, [phase, round])
 
-  // Game music from public/game-music: it only plays while a round is live
-  // (ready/perform), starts a fresh random track each time a game begins, and
-  // never plays on the lobby, the finished screen, or any other view. The
-  // ambient track in App stands down while this is going.
+  // Game music from public/game-music
   useEffect(() => {
     const audio = new Audio()
     audio.loop = true
@@ -242,7 +244,7 @@ function SalsaGame({
     const prob = prediction.probabilities[target] || 0
     if (prob > maxProbRef.current) {
       maxProbRef.current = prob
-      setLiveProb(prob) // drives the live meter; maxProbRef alone can't trigger a re-render
+      setLiveProb(prob) // drives the live meter cuz maxProbRef can't trigger a re-render
     }
   }, [prediction, phase, target])
 
@@ -251,8 +253,8 @@ function SalsaGame({
   // during a round, add in the live-tracked estimate so the meter moves as you dance
   const liveScore = phase === 'perform' ? totalScore + Math.round(liveProb * 100) : totalScore
 
-  // The name was captured on the title card, so once the last round lands the
-  // score goes up to the leaderboard on its own -- no submit prompt.
+  // The name was captured on the title card
+
   useEffect(() => {
     if (phase !== 'finished' || submittedRef.current) return
     const name = playerName.trim()
@@ -260,8 +262,7 @@ function SalsaGame({
     submittedRef.current = true
     let cancelled = false
     setSubmitState('saving')
-    // submit_score() is a database upsert that keeps only the best score per
-    // player name -- a new lower score never overwrites a higher one.
+
     supabase
       .rpc('submit_score', {
         p_player_name: name,
@@ -278,8 +279,7 @@ function SalsaGame({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase])
 
-  // Refresh the standings once the fresh score is actually in the database
-  // (the refetch is async too, so bumping on phase alone would race the upsert).
+  // ref the standings once the fresh score is actually in the database
   useEffect(() => {
     if (submitState === 'done') setBoardRefresh((n) => n + 1)
   }, [submitState])
@@ -307,8 +307,6 @@ function SalsaGame({
         </div>
       )}
 
-      {/* Clicks anywhere on the backdrop stop here -- outside the card is not
-          a way to dismiss the prompt and start the game. */}
       {showNamePrompt && (
         <div className="name-prompt-overlay" onClick={(e) => e.stopPropagation()}>
           <div
@@ -339,9 +337,9 @@ function SalsaGame({
 
       {(phase === 'ready' || phase === 'perform') && (
         <DanceCallout
-          phase={phase}
           round={round}
           target={target}
+          countdown={countdownLabel}
           poseDetected={Boolean(pose && pose.person_detected)}
           liveScore={liveScore}
           maxScore={maxScore}

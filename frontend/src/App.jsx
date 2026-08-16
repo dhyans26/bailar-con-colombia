@@ -98,12 +98,10 @@ function App() {
   const [pose, setPose] = useState(null)
   const [prediction, setPrediction] = useState(null)
   const [error, setError] = useState(null)
-  // True while a round is actually being danced -- shakira stands down then.
   const [gameActive, setGameActive] = useState(false)
   const [muted, setMuted] = useState(false)
   const stageRef = useRef(null)
   const lobbyMusicRef = useRef(null)
-  // Mirror of `muted` for effects that must not re-run when it flips.
   const mutedRef = useRef(false)
 
   const handleGameActiveChange = useCallback((active) => setGameActive(active), [])
@@ -120,11 +118,7 @@ function App() {
         .catch(() => {})
     }
 
-    // Polled, not one-shot: if the backend isn't up yet the moment this
-    // mounts (Electron launches the frontend and the uvicorn backend at
-    // roughly the same time), a single fetch-and-forget would leave
-    // `health` stuck at null forever with no retry. Also keeps
-    // camera_error live if it changes later.
+    // poll otherwise one failure means uh oh
     poll()
     const id = setInterval(poll, HEALTH_POLL_MS)
     return () => {
@@ -133,10 +127,7 @@ function App() {
     }
   }, [])
 
-  // Pose + prediction arrive over a websocket the backend pushes to the
-  // instant it has a new result, instead of polling on a timer -- see
-  // /ws/state in backend/api.py. Reconnects with a fixed delay if the
-  // backend isn't up yet or the connection drops.
+  // pose + prediction arrive over a websocket
   useEffect(() => {
     let cancelled = false
     let socket = null
@@ -169,10 +160,6 @@ function App() {
     }
   }, [])
 
-  // Shakira is the ambient track for everything outside a live game: the intro,
-  // the lobby, the finished screen, the leaderboard. It hands over to the
-  // game-music track the instant a game goes live and comes back when it ends,
-  // so the player is never stuck in silence.
   useEffect(() => {
     if (!INTRO_MUSIC) return
     const audio = new Audio(INTRO_MUSIC)
@@ -181,8 +168,6 @@ function App() {
     audio.muted = mutedRef.current
     lobbyMusicRef.current = audio
 
-    // Autoplay before the player has touched the page is usually refused, so
-    // the first key or click anywhere is the fallback trigger.
     const stopWaiting = () => {
       window.removeEventListener('keydown', start)
       window.removeEventListener('pointerdown', start)
@@ -212,11 +197,6 @@ function App() {
     }
   }, [gameActive])
 
-  // M kills every sound at once. Undocumented on purpose -- it is deliberately
-  // absent from the hints and the UI. It lives up here because App is the only
-  // place that can see all of it: the ambient track it owns, the game music in
-  // SalsaGame, and the climb clips in Intro, the last two via the `muted` prop.
-  // Mute rather than pause, so a track keeps its place while silenced.
   useEffect(() => {
     mutedRef.current = muted
     if (lobbyMusicRef.current) lobbyMusicRef.current.muted = muted
@@ -225,7 +205,6 @@ function App() {
   useEffect(() => {
     const onKey = (e) => {
       if (e.key !== 'm' && e.key !== 'M') return
-      // Modifiers excluded so this never steals Cmd+M and friends, and text
       // fields excluded so typing an "m" into the name prompt is just an "m".
       if (e.metaKey || e.ctrlKey || e.altKey) return
       const tag = e.target?.tagName
@@ -237,9 +216,7 @@ function App() {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
-  // Left/right arrows swap between the game and the monitor -- replaces the
-  // old on-screen tab buttons, which sat over the summit as a permanent UI
-  // chrome element. Only wired up once the game stage is actually showing.
+  // left/right arrows swap between the game and the monitor
   useEffect(() => {
     if (stage !== 'game') return
     const onKey = (e) => {
@@ -254,14 +231,10 @@ function App() {
     return () => window.removeEventListener('keydown', onKey)
   }, [stage])
 
-  // Leaving the game view abandons any in-progress round, so hand the ambient
-  // track back over instead of leaving the player in silence.
   useEffect(() => {
     if (view !== 'game') setGameActive(false)
   }, [view])
 
-  // The summit is already sitting behind the intro, so arriving at the game is
-  // just the panel coming up on top of it.
   useLayoutEffect(() => {
     if (stage !== 'game' || !stageRef.current) return
     gsap.fromTo(
@@ -271,8 +244,6 @@ function App() {
     )
   }, [stage])
 
-  // The backend connects during the intro, so the websocket is live and the
-  // model is already collecting frames by the time the climb finishes.
   return (
     <div className="app">
       <SummitScene pose={pose} />

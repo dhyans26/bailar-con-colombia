@@ -1,14 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 
-// Draws the empanada mascot (public/emp.png) as the avatar body, with black
-// stick limbs anchored at the orange dots marked on the artwork. Each limb is
-// two segments -- shoulder->elbow->wrist for arms, hip->knee->ankle for legs
-// -- mirroring the two bones the pose model actually tracks per limb, so the
-// empanada "performs" the tracked movement (elbow/knee bend included) while
-// its body stays the fixed image. The whole character also drifts a little
-// left/right as the person steps side to side (see bodyShiftX below).
+// stick limbs anchored at the orange dots marked on the artwork
+// each limb is 2 segments: shoulder->elbow->wrist for arms, hip->knee->ankle for legs
+// locations of the orange anchor dots in emp.png (577x432 source image).
 
-// Pixel locations of the orange anchor dots in emp.png (577x432 source image).
 const ANCHORS = {
   left_arm: { x: 166, y: 184 },
   right_arm: { x: 321, y: 155 },
@@ -20,26 +15,11 @@ const IMAGE_WIDTH = 577
 const IMAGE_HEIGHT = 432
 const SEGMENT_LENGTH = 38
 
-// Limbs are drawn as layered strokes instead of a single flat line, so they
-// read as golden cheese breadsticks rather than stick-figure sticks: a dark
-// crust outline underneath, a gradient golden-brown body on top, and two
-// dash-array overlays that scatter cheese/herb "speckles" along the length.
+// limbs = breadsticks NOT a line
 const STICK_WIDTH = 9
 const OUTLINE_WIDTH = STICK_WIDTH + 4
 const HIGHLIGHT_WIDTH = STICK_WIDTH * 0.35
 
-// Two-segment limb chains: each entry names the pose keypoints whose
-// consecutive pairs drive that segment's direction (proximal->mid,
-// mid->distal), plus a fallback direction pair used whenever a segment's
-// driving keypoints aren't visible.
-//
-// The camera frame is never mirrored (no cv2.flip in the backend), but the
-// pose model's left_*/right_* keypoints are anatomical -- the *person's* own
-// left/right. Facing the camera, your anatomical right arm lands on the
-// image's left side. So the screen-left anchor is intentionally driven by
-// right_* keypoints (and vice versa): this makes the avatar mirror you like
-// a reflection, which also happens to be the natural, expected feel for a
-// pose-driven avatar (and matters more than "left_arm" reading correctly).
 const LIMBS = [
   {
     name: 'left_arm',
@@ -67,23 +47,19 @@ const LIMBS = [
   },
 ]
 
-// Same direct (non-swapped) correspondence as the limb mapping above: a
-// keypoint's raw x position in the camera frame maps straight to the
-// avatar's screen x, with no left/right flip, so stepping physically drifts
-// the whole character the way the limb motion already implies it should.
+// left/right flip preventors
 const HIP_NAMES = ['left_hip', 'right_hip']
 const SHOULDER_NAMES = ['left_shoulder', 'right_shoulder']
 const MAX_SHIFT = 60 // viewBox units either side of center -- "a lil", not a lot
-const SHIFT_SMOOTHING = 0.25 // 0..1, higher = snappier/less smoothing
-// how fast the "center" baseline drifts toward wherever the person actually stands.
+const SHIFT_SMOOTHING = 0.25 // 1 = snappy
+// how fast the baseline drifts toward wherever the person actually stands.
 const BASELINE_SMOOTHING = 0.01
 
 function clamp(v, lo, hi) {
   return Math.min(hi, Math.max(lo, v))
 }
 
-// Midpoint x of the hips (falling back to shoulders) -- a stable stand-in
-// for "where the body is horizontally", null if neither pair is visible.
+// "where the body is horizontally", null if neither pair is visible.
 function bodyCenterX(byName) {
   const [lh, rh] = HIP_NAMES.map((n) => byName[n])
   if (lh && rh) return (lh.x + rh.x) / 2
@@ -100,9 +76,6 @@ function unitVector(from, to) {
   return { x: dx / len, y: dy / len }
 }
 
-// Walks a limb's joint chain (3 keypoints -> 2 segments) and returns the 3
-// points (anchor, mid-joint, tip) to draw, falling back per-segment when the
-// driving keypoints are missing.
 function limbPoints(limb, byName) {
   const points = [limb.anchor]
   let current = limb.anchor
@@ -150,10 +123,6 @@ function EmpanadaAvatar({ pose }) {
   return (
     <svg viewBox={`0 0 ${IMAGE_WIDTH} ${IMAGE_HEIGHT}`} width="320" height="240">
       <defs>
-        {/* objectBoundingBox (the default) means this recomputes per limb,
-            so every segment gets its own light-crumb-to-crust gradient
-            running along its own length, regardless of the angle it's
-            drawn at. */}
         <linearGradient id="breadstickBody" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="#f7e2ab" />
           <stop offset="45%" stopColor="#e3a83f" />
@@ -161,9 +130,6 @@ function EmpanadaAvatar({ pose }) {
         </linearGradient>
       </defs>
       <g transform={`translate(${shiftX.toFixed(1)}, 0)`}>
-        {/* emp.png ships with a translucent cream backdrop baked in rather
-            than true transparency; the cutout has that keyed out so the
-            character doesn't carry a hazy box wherever it's placed. */}
         <image href="/emp-cutout.png" x="0" y="0" width={IMAGE_WIDTH} height={IMAGE_HEIGHT} />
         {limbs.map((limb) => {
           const pts = limb.points.map((p) => `${p.x},${p.y}`).join(' ')
@@ -187,7 +153,7 @@ function EmpanadaAvatar({ pose }) {
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
-              {/* pale crumb highlight down the center */}
+              {/*  crumb highlight down the center */}
               <polyline
                 points={pts}
                 fill="none"

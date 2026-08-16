@@ -27,7 +27,6 @@ body {
   background: var(--sky-high);
   color: var(--ink);
   font-family: var(--font);
-  /* Changa runs light for a display face — 600 is its normal body weight here */
   font-weight: 600;
 }
 
@@ -88,23 +87,10 @@ body {
   pointer-events: none;
 }
 
-/* the empanada mascot, off to the right of the church in the background --
-   this wraps the same live pose-tracking avatar shown in-game, so it mirrors
-   your moves; with nobody in frame it just sits on its fallback idle pose. */
 .scene__dancer {
   position: absolute;
-  /* negative on purpose: the avatar's viewBox has a lot of empty, invisible
-     space below its feet (room for the legs' fallback swing), so the box
-     needs to sit partly below the viewport edge -- harmlessly clipped by
-     .scene's overflow:hidden -- to bring the actual feet up onto the grass
-     instead of sinking into it */
   bottom: -1vh;
   left: 78%;
-  /* scaled up around the feet, not the box's bottom edge -- the leg tips sit
-     ~68% down the viewBox (the empanada body itself only occupies the top
-     half; the rest is empty room for the legs' fallback swing), so anchoring
-     the scale there keeps the feet planted on the grass at any size instead
-     of lifting off as the box's own empty padding gets magnified too */
   transform: translateX(-50%) scale(2);
   transform-origin: 50% 68%;
   pointer-events: none;
@@ -117,7 +103,6 @@ body {
   filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.3));
 }
 
-/* thin air sitting on the summit, so sky and ground do not butt up hard */
 .scene__haze {
   position: absolute;
   left: 0;
@@ -128,32 +113,16 @@ body {
   pointer-events: none;
 }
 
-/* the flat top of the mountain -- grass.png is a much taller shot with a lot
-   of empty space above the blades (room was left for the blades to sway),
-   so it's scaled up well past this band's own height and bottom-anchored;
-   the extra height above just gets clipped by this element's own bounds,
-   leaving only the actual grass on screen instead of the blank space over it */
 .scene__ground {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 11vh;
-  background-color: var(--grass-dark);
-  background-image:
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.35) 0 1px, transparent 1px),
-    url('/grass.png');
-  background-repeat: no-repeat, repeat-x;
-  background-position: top left, bottom center;
-  background-size: auto, auto 41vh;
-}
-
-.scene__floor-light {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 55% 80% at 50% 105%, rgba(255, 246, 214, 0.2), transparent 70%),
-    linear-gradient(to bottom, rgba(219, 233, 247, 0.45), transparent 22%);
+  height: 13vh;
+  background-image: url('/grass.png');
+  background-repeat: repeat-x;
+  background-position: bottom center;
+  background-size: auto 47vh;
 }
 
 /* ---------- intro ---------- */
@@ -194,7 +163,7 @@ body {
   filter: drop-shadow(0 20px 44px rgba(0, 0, 0, 0.55));
 }
 
-/* every climb clip is stacked here; only the running one is faded up */
+/* every climb clip is stacked here, the running one is faded up */
 .intro__video {
   position: absolute;
   inset: 0;
@@ -210,8 +179,6 @@ body {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  /* light enough not to mud up the daylight sky, heavy enough at the top and
-     bottom to keep the title and the climb text legible over it */
   background:
     radial-gradient(ellipse at 50% 45%, transparent 45%, rgba(4, 12, 24, 0.45) 100%),
     linear-gradient(to bottom, rgba(4, 12, 24, 0.5), transparent 32%),
@@ -231,9 +198,7 @@ body {
   );
 }
 
-/* the leaderboard panel on the title card -- the main menu. Mirrors
-   .stage__panel so the board reads as part of the app rather than a stray
-   card floating over the summit. */
+/* the leaderboard panel on the title card. */
 .intro__leaderboard {
   position: absolute;
   top: clamp(1.5rem, 6vh, 3.5rem);
@@ -420,8 +385,6 @@ body {
 
 /* ---------- game ---------- */
 
-/* SalsaGame and MonitorView ship their own plain markup; this just places
-   it over the summit. */
 .stage {
   position: relative;
   height: 100%;
@@ -431,11 +394,6 @@ body {
   justify-content: flex-end;
 }
 
-/* kept to a right-hand column, floating directly over the summit with no
-   card behind it -- no background/border/blur, just the text.
-   Sized well past what a desk-bound app would need -- the player is on
-   their feet a few steps back from the screen, dancing, not reading up
-   close, so everything in here reads at "across the room" size. */
 .stage__panel {
   max-width: 40rem;
   padding: 1.5rem 1.75rem;
@@ -491,7 +449,6 @@ body {
   opacity: 0.45;
 }
 
-/* pairs the final-score heading with the meter so they read as one summary */
 .finished-summary {
   display: flex;
   align-items: center;
@@ -503,7 +460,6 @@ body {
   margin: 0;
 }
 
-/* the post-game choices: another round with the same team, or back to menu */
 .finished-actions {
   display: flex;
   gap: 0.75rem;
@@ -511,11 +467,7 @@ body {
   margin-top: 1.25rem;
 }
 
-/* live star-o-meter: fills up as the current move's confidence improves,
-   instead of only revealing a score once the round window closes -- 100
-   points per star, so a 5-round game tops out at 5. Stacked vertically
-   (bottom star fills first, like a level rising) with no card around it, so
-   it reads as a HUD element rather than another boxed panel. */
+/* dance o meter like just dance */
 .dance-meter {
   display: flex;
   flex-direction: column;
@@ -558,9 +510,8 @@ body {
   width: 100%;
   overflow: hidden;
   color: var(--gold);
-  /* the live confidence signal jitters frame to frame; smoothing the height
-     keeps the fill reading as a meter instead of a flicker */
-  transition: height 0.15s ease-out;
+  transition: height 0.15s ease-out; 
+  /* jitters alot so transition helps */
 }
 
 .dance-meter__score {
@@ -571,10 +522,6 @@ body {
   opacity: 0.9;
 }
 
-/* the current round's call-out, portalled to <body> and blown up to fill
-   the screen -- see the comment on <DanceCallout> in SalsaGame.jsx for why
-   it can't just live inside .stage__panel. Text-only and click-through, so
-   the tab dock underneath stays reachable. */
 .dance-callout {
   position: fixed;
   inset: 0;
@@ -584,8 +531,6 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  /* extra bottom padding biases the centered stack upward, so the big move
-     name clears the empanada mascot standing in the background below it */
   padding: 5vh 5vw 32vh;
   text-align: center;
   pointer-events: none;
@@ -598,15 +543,6 @@ body {
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: rgba(244, 239, 230, 0.75);
-}
-
-.dance-callout__go {
-  margin: 0;
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--gold);
 }
 
 .dance-callout__move {
@@ -625,8 +561,6 @@ body {
   animation: pulse 1.4s ease-in-out infinite;
 }
 
-/* docked to the right edge, vertically centered, instead of stacking in the
-   middle of the screen with the giant move name */
 .dance-callout__meter {
   position: fixed;
   right: clamp(1.5rem, 4vw, 3.5rem);
@@ -634,8 +568,6 @@ body {
   transform: translateY(-50%);
 }
 
-/* narrow viewports: the church already sits behind the left-hand panel by
-   design, but there's no room for the dancer off to the right as well */
 @media (max-width: 1100px) {
   .scene__church {
     height: 56vh;

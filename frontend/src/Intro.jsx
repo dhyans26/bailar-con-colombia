@@ -3,19 +3,14 @@ import gsap from 'gsap'
 import Leaderboard from './Leaderboard.jsx'
 import { BEATS, CLIMB_AUDIO, DEFAULT_HINT, TITLE } from './story.js'
 
-// The ride up Monserrate. A title card, then one gondola clip per beat: the
-// clip plays, freezes on its last frame, its line of text fades in, and space
-// moves on. After the last beat the sun washes the whole thing out and hands
-// over to the game.
-//
-// All copy lives in story.js — nothing to edit in here to change the words.
+// story.js to update the lore
+
 
 const TITLE_INDEX = -1
 
 function Intro({ onComplete, muted = false }) {
   // -1 is the title card, 0..n-1 index into BEATS.
   const [index, setIndex] = useState(TITLE_INDEX)
-  // Text only appears once the clip for this beat has finished.
   const [showText, setShowText] = useState(true)
 
   const rootRef = useRef(null)
@@ -34,13 +29,11 @@ function Intro({ onComplete, muted = false }) {
     typeof window !== 'undefined' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-  // Title image sits still; only centering is applied.
   useLayoutEffect(() => {
     if (!titleRef.current) return
     gsap.set(titleRef.current, { xPercent: -50 })
   }, [])
 
-  // Fade each line in as it arrives.
   useLayoutEffect(() => {
     if (!showText || !copyRef.current) return
     gsap.fromTo(
@@ -57,11 +50,6 @@ function Intro({ onComplete, muted = false }) {
     )
   }, [index, showText, reduced])
 
-  // The ambient track lives in App now, and so does the M hotkey that mutes
-  // it -- App owns every track, so it is the only place that can silence all
-  // of them at once. All that is left here is the climb clips' own audio,
-  // which follows the same flag down as a prop. The ref mirror keeps playBeat
-  // stable while still seeing the current value.
   useEffect(() => {
     mutedRef.current = muted
     videoRefs.current.forEach((v) => {
@@ -75,8 +63,8 @@ function Intro({ onComplete, muted = false }) {
     busyRef.current = true
     videoRefs.current.forEach((v) => v?.pause())
 
-    // The ambient track lives up in App, so it keeps playing as the picture
-    // washes out and the climb hands over to the game lobby.
+    // The ambient track lives up in App
+
     if (reduced) {
       gsap.set(rootRef.current, { opacity: 0 })
       onComplete()
@@ -89,7 +77,6 @@ function Intro({ onComplete, muted = false }) {
     tl.to(rootRef.current, { opacity: 0, duration: 1, ease: 'power2.out' }, 1.4)
   }, [onComplete, reduced])
 
-  // Start the clip for `next`, crossfading over whatever is on screen.
   const playBeat = useCallback(
     (next) => {
       const video = videoRefs.current[next]
@@ -101,8 +88,7 @@ function Intro({ onComplete, muted = false }) {
       setIndex(next)
       setShowText(false)
 
-      if (!video) {
-        // Missing clip: fall through to the text rather than dead-ending.
+      if (!video) { // MISSING CLIPPPP
         showTextRef.current = true
         setShowText(true)
         busyRef.current = false
@@ -112,7 +98,7 @@ function Intro({ onComplete, muted = false }) {
       video.currentTime = 0
       video.muted = !CLIMB_AUDIO || mutedRef.current
       video.play().catch(() => {
-        // Autoplay with sound refused — retry silently instead of stalling.
+        // autoplay with sound refused
         video.muted = true
         video.play().catch(() => {})
       })
@@ -127,7 +113,6 @@ function Intro({ onComplete, muted = false }) {
         },
       })
 
-      // The title card only ever leaves once.
       if (next === 0 && titleRef.current) {
         gsap.to(titleRef.current.parentElement, {
           opacity: 0,
@@ -148,11 +133,10 @@ function Intro({ onComplete, muted = false }) {
   }, [])
 
   const advance = useCallback(() => {
-    // busy = a clip is crossfading in, so a fast double-tap cannot blow
-    // straight through the clip that just started.
+    // busy = a clip is crossfading in
     if (doneRef.current || busyRef.current) return
 
-    // Mid-clip: jump to the end rather than making the player wait it out.
+    // mid-clip: jump to the end 
     if (!showTextRef.current) {
       const video = videoRefs.current[indexRef.current]
       if (video && Number.isFinite(video.duration) && video.duration > 0) {
@@ -197,9 +181,6 @@ function Intro({ onComplete, muted = false }) {
         <img src={TITLE.image} alt="" ref={titleRef} draggable="false" />
       </div>
 
-      {/* The main menu: the leaderboard sits on the title card so scores are
-          visible before the climb starts. Clicks on it stop here -- reading
-          the board must not advance the intro. */}
       {onTitle && (
         <div className="intro__leaderboard" onClick={(e) => e.stopPropagation()}>
           <Leaderboard refreshSignal={0} />
@@ -214,8 +195,7 @@ function Intro({ onComplete, muted = false }) {
           }}
           className="intro__video"
           src={b.video}
-          // Only the current clip and the next one are worth fetching; the
-          // rest stay cold so a four-clip climb does not download at once.
+          // the current clip and the next one are worth fetching
           preload={i <= index + 1 ? 'auto' : 'none'}
           muted={!CLIMB_AUDIO}
           playsInline
