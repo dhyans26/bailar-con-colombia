@@ -58,15 +58,15 @@ export const LICENSE_DIALOGUE_PASS = [
   { speaker: 'Cabí', text: '¡Ay, mira nada más! You really brought it out there on that floor.' },
   { speaker: 'Empanada', text: '¡Fuerte y guapo bailando, mi amigo! I knew you had it in you.' },
   { speaker: 'Cabí', text: 'Fuerte, sí... pero also actually on beat, for once.' },
-  { speaker: 'Cabí', text: '{score} de {maxScore} puntos — más que suficiente.' },
+  { speaker: 'Cabí', text: '{score} de {maxScore} puntos es más que suficiente.' },
   { speaker: 'Cabí', text: 'Con esto, te doy tu licencia oficial de salsa. ¡Baila donde quieras, bailarín!' },
-  { speaker: 'Empanada', text: '¡Vamos a bailar otra vez pronto! El mundo entero nos espera.' },
+  { speaker: 'Empanada', text: '¡Vamos a bailar otra vez pronto! El mundo entero nos espera :))' },
 ]
 
 export const LICENSE_DIALOGUE_FAIL = [
   { speaker: 'Cabí', text: 'Mmm... mi amor, that was... an effort.' },
   { speaker: 'Empanada', text: '¡Fuerte y guapo bailando, pero maybe not on beat!' },
-  { speaker: 'Cabí', text: '{score} de {maxScore} puntos — need more than {threshold} para la licencia.' },
+  { speaker: 'Cabí', text: '{score} de {maxScore} puntos — neccesitas más que {threshold} para la licencia.' },
   { speaker: 'Cabí', text: 'Practice those caderas and come back to me.' },
   { speaker: 'Empanada', text: '¡La próxima vez! I know you\'ll be muy on beat.' },
 ]

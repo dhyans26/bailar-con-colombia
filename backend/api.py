@@ -35,10 +35,6 @@ class PoseResponse(BaseModel):
     person_detected: bool
     keypoints: List[Keypoint] = []
     timestamp: float
-    # Dimensions (pixels) of the frame the keypoints were detected on, i.e.
-    # after config.FRAME_SCALE resizing -- lets clients turn a keypoint's raw
-    # x into a position normalized to the frame (e.g. for side-to-side
-    # tracking) without hardcoding the camera's resolution.
     frame_width: int = 0
     frame_height: int = 0
 
@@ -279,3 +275,11 @@ async def ws_state(websocket: WebSocket) -> None:
             await asyncio.sleep(_WS_CHECK_INTERVAL)
     except WebSocketDisconnect:
         pass
+
+
+# Only hit when running as the PyInstaller-frozen binary (see api.spec) --
+# in dev, the backend is started as `uvicorn api:app` instead (main.js).
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="127.0.0.1", port=8000)

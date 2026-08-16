@@ -28,10 +28,12 @@ function playableMoves(labels) {
   return (labels || []).filter((label) => label !== 'idle')
 }
 
+const DISPLAY_NAME_LOWERCASE_WORDS = new Set(['and', 'of', 'the'])
+
 function displayName(label) {
   return label
     .split('_')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .map((w, i) => (i > 0 && DISPLAY_NAME_LOWERCASE_WORDS.has(w) ? w : w.charAt(0).toUpperCase() + w.slice(1)))
     .join(' ')
 }
 

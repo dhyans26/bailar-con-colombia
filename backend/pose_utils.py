@@ -8,7 +8,13 @@ import numpy as np
 import torch
 from ultralytics import YOLO
 
-MODEL_PATH = Path(__file__).resolve().parent.parent / "yolo26n-pose.pt"
+from runtime_paths import frozen_base_dir
+
+# In a PyInstaller build the weights are bundled at the app's data root
+# (api.spec adds "../yolo26n-pose.pt" -> "."); from source they still live
+# one level up, at the repo root.
+_frozen = frozen_base_dir()
+MODEL_PATH = (_frozen / "yolo26n-pose.pt") if _frozen else Path(__file__).resolve().parent.parent / "yolo26n-pose.pt"
 
 if torch.backends.mps.is_available(): # mps if available (~40fps)
     DEVICE = "mps"
