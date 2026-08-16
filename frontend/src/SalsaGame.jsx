@@ -292,7 +292,7 @@ function SalsaGame({
       {moves.length > 0 && phase === 'lobby' && (
         <div>
           <p>
-            {ROUNDS_PER_GAME} rounds. Each round calls out a move -- nail it before time's up to
+            {ROUNDS_PER_GAME} rounds. Each round calls out a move, salsa it before time's up to
             score points.
           </p>
           <button onClick={handleStartClick}>Start Game</button>
