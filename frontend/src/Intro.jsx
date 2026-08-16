@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import Leaderboard from './Leaderboard.jsx'
-import PalmTree from './PalmTree.jsx'
 import { BEATS, CLIMB_AUDIO, DEFAULT_HINT, TITLE } from './story.js'
 
 // story.js to update the lore
@@ -200,10 +199,10 @@ function Intro({ onComplete, muted = false }) {
 
       {/* palms flank the church so the sides of the title card aren't bare sky */}
       <div className="scene__palms">
-        <PalmTree className="scene__palm scene__palm--edge-left" />
-        <PalmTree className="scene__palm scene__palm--near-left" />
-        <PalmTree className="scene__palm scene__palm--near-right" />
-        <PalmTree className="scene__palm scene__palm--edge-right" />
+        <img className="scene__palm scene__palm--edge-left" src="/tree_coconut.png" alt="" />
+        <img className="scene__palm scene__palm--near-left" src="/tree.png" alt="" />
+        <img className="scene__palm scene__palm--near-right" src="/tree_coconut.png" alt="" />
+        <img className="scene__palm scene__palm--edge-right" src="/tree.png" alt="" />
       </div>
 
       {onTitle && (

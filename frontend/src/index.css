@@ -6,10 +6,6 @@
   --grass-dark: #3c4c1e;
   --ink: #f4efe6;
   --gold: #f2c14e;
-  --palm-frond: #4f8a34;
-  --palm-frond-dark: #2f5b22;
-  --palm-trunk: #a3794a;
-  --palm-trunk-dark: #7a5934;
   --font: 'Changa Variable', system-ui, sans-serif;
 
   color-scheme: dark;
@@ -165,48 +161,28 @@ body {
 
 .scene__palm {
   position: absolute;
+  display: block;
+  height: 100%;
   width: auto;
   overflow: visible;
   filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.3));
 }
 
-.palm-tree {
-  display: block;
-  height: 100%;
-  width: auto;
-}
-
-.palm-tree__trunk {
-  fill: var(--palm-trunk);
-  stroke: var(--palm-trunk-dark);
-  stroke-width: 2;
-}
-
-.palm-tree__frond {
-  fill: var(--palm-frond);
-}
-
-.palm-tree__frond--dark {
-  fill: var(--palm-frond-dark);
-}
-
-.palm-tree__coconut {
-  fill: var(--palm-trunk-dark);
-}
-
-/* far edges, biggest -- frame the scene like foreground foliage */
+/* far edges, biggest -- frame the scene like foreground foliage.
+   each instance reuses the same couple of source images, but a mirror
+   flip + its own rotate/translate keeps them from reading as copies. */
 .scene__palm--edge-left {
   left: -1%;
   bottom: 4vh;
   height: 54vh;
-  transform: scaleX(-1) rotate(3deg);
+  transform: scaleX(-1) rotate(3deg) translate(-6%, 1%);
 }
 
 .scene__palm--edge-right {
   right: -2%;
   bottom: 3vh;
   height: 58vh;
-  transform: rotate(-3deg);
+  transform: rotate(-3deg) translate(4%, -2%);
 }
 
 /* a little further in, smaller -- reads as set back from the edge trees */
@@ -214,14 +190,14 @@ body {
   left: 9%;
   bottom: 6vh;
   height: 32vh;
-  transform: scaleX(-1) rotate(-2deg);
+  transform: scaleX(-1) rotate(-2deg) translate(3%, 2%);
 }
 
 .scene__palm--near-right {
   right: 9%;
   bottom: 5vh;
   height: 40vh;
-  transform: rotate(4deg);
+  transform: rotate(4deg) translate(-5%, -1%);
 }
 
 /* ---------- intro ---------- */
