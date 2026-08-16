@@ -2,14 +2,8 @@
 
 A desktop game where you dance salsa in front of your webcam, and computer vision judges your moves!
 
-Real-time pose estimation (YOLO) feeds a LSTM move classifier that recognizes your dance moves (`front_and_back`, `idle`, `side_step`, `spin`) live from webcam video. Land the moves the game calls for and earn your salsa license from Señorita Cabí and Señor Empanada, up on the slopes of Monserrate, Bogotá.
-## How it works
+Real-time pose estimation (YOLO) feeds a LSTM move classifier that recognizes your dance moves (`front_and_back`, `idle`, `side_step`, `spin`) live from webcam video. Dance well and you'll earn your salsa license from Señorita Cabí and Señor Empanada, up on the slopes of Monserrate, Bogotá.
 
-
-- **`backend/`** — Python/FastAPI service. Captures webcam frames, runs YOLO pose estimation to extract keypoints, and feeds a rolling window of them into a trained LSTM classifier. Serves the latest pose + move prediction over REST (`/api/pose`, `/api/prediction`, `/api/state`) and a live WebSocket (`/ws/state`) that pushes updates the moment a new result is ready.
-- **`frontend/`** — React + Vite app, packaged as an Electron desktop app. Renders the story, the dance game, and the leaderboard, and polls/subscribes to the backend for pose data to drive gameplay.
-- **`supabase/`** — Postgres schema for the online leaderboard (`salsa_leaderboard` table + `submit_score` RPC, one best score per player).
-- **`yolo26n-pose.pt`** — pretrained YOLO pose model used for keypoint extraction.
 
 ### Training data / model
 
@@ -72,26 +66,6 @@ VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 
 Apply [`supabase/schema.sql`](supabase/schema.sql) to your Supabase project to set up the leaderboard table and RPC.
 
-## Repo layout
-
-```
-backend/
-  api.py               # FastAPI app: pose pipeline + REST/WebSocket endpoints
-  pose_utils.py         # YOLO pose loading, inference, keypoint extraction
-  lstm_model.py          # LSTM architecture + feature/augmentation helpers
-  inference.py            # shared checkpoint loading + prediction
-  train_lstm.py            # trains the move classifier from recorded clips
-  dataset_recorder.py       # webcam tool for recording labeled move clips
-  test_lstm_model.py         # live webcam sanity check for a trained model
-  dataset/                    # recorded per-move training clips
-  model/                        # trained checkpoint(s)
-frontend/
-  src/                  # React app (game, story/cutscenes, leaderboard)
-  electron/              # Electron main/preload — launches backend + window
-  public/                  # art, video, and music assets
-supabase/
-  schema.sql             # leaderboard table + submit_score RPC
-```
 
 ## Acknowledgments
 
