@@ -37,6 +37,17 @@ export const INTRO_MUSIC_VOLUME = 0.55
 
 export const DEFAULT_HINT = 'space to continue'
 
+// the drawn version of the default hint, shown through the climb beats.
+// A beat that sets its own `hint` string still gets plain text.
+export const DEFAULT_HINT_IMAGE = '/inst_space_cont.png'
+
+// the drawn button artwork -- see DrawnButton.jsx
+export const BUTTON_ART = {
+  start: '/button_start.png',
+  skip: '/button_skip.png',
+  playAgain: '/button_play-again.png',
+}
+
 // The climb clips try to play with sound
 export const CLIMB_AUDIO = true
 

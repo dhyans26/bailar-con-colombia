@@ -379,10 +379,11 @@ body {
   margin: 0;
 }
 
-/* the drawn "press space to begin". Cropped tight to its ink, so the box
-   is the artwork -- width alone places it. Doubled class so it outranks the
-   plain .intro__hint text styling further down the sheet. */
-.intro__hint.intro__hint--drawn {
+/* the drawn "press space" prompts. The title card's art is cropped tight to
+   its ink, so the box is the artwork and width alone places it. Doubled
+   classes so they outrank the plain hint text styling further down the sheet. */
+.intro__hint.intro__hint--drawn,
+.cutscene__hint.cutscene__hint--drawn {
   display: block;
   width: min(26rem, 56vw);
   height: auto;
@@ -398,8 +399,21 @@ body {
   transition: scale 0.18s ease-out, filter 0.18s ease-out, opacity 0.18s ease-out;
 }
 
+/* the in-scene prompt -- under the climb beats' story text and under the end
+   cutscene's dialogue -- so it runs a touch smaller than the title card's.
+   Unlike the title art this one ships with wide transparent margins (~26% of
+   the width above the ink, ~16% below), so the frame is pulled back in to keep
+   the gap under the text honest. */
+.intro__hint.intro__hint--climb,
+.cutscene__hint.cutscene__hint--drawn {
+  --hint-w: min(21.5rem, 47vw);
+  width: var(--hint-w);
+  margin: calc(1.2rem - var(--hint-w) * 0.256) auto calc(var(--hint-w) * -0.157);
+}
+
 /* hovering stops the breathing and holds it at full strength */
-.intro__hint.intro__hint--drawn:hover {
+.intro__hint.intro__hint--drawn:hover,
+.cutscene__hint.cutscene__hint--drawn:hover {
   animation: none;
   opacity: 1;
   scale: 1.07;
@@ -452,25 +466,11 @@ body {
   }
 }
 
+/* the drawn skip corner -- placement only, the look comes from .btn-drawn */
 .intro__skip {
   position: absolute;
   right: 1.5rem;
   bottom: 1.25rem;
-  padding: 0.4rem 0.8rem;
-  border: 1px solid rgba(244, 239, 230, 0.25);
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.25);
-  color: rgba(244, 239, 230, 0.7);
-  font: inherit;
-  font-size: 0.75rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-
-.intro__skip:hover {
-  color: var(--ink);
-  border-color: rgba(244, 239, 230, 0.6);
 }
 
 /* the name prompt shown when the player clicks Start Game without a name yet */
@@ -688,6 +688,7 @@ body {
 
 .finished-actions {
   display: flex;
+  align-items: center;
   gap: 0.75rem;
   flex-wrap: wrap;
 }
@@ -742,25 +743,11 @@ body {
   animation: pulse 2.4s ease-in-out infinite;
 }
 
+/* placement only -- the look comes from .btn-drawn */
 .cutscene__skip {
   position: absolute;
   top: 1.5rem;
   right: 1.5rem;
-  padding: 0.4rem 0.8rem;
-  border: 1px solid rgba(244, 239, 230, 0.25);
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.25);
-  color: rgba(244, 239, 230, 0.7);
-  font: inherit;
-  font-size: 0.75rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-
-.cutscene__skip:hover {
-  color: var(--ink);
-  border-color: rgba(244, 239, 230, 0.6);
 }
 
 /* dance o meter like just dance */
@@ -865,6 +852,79 @@ body {
   transform: translateY(-50%);
 }
 
+/* ---------- hand-drawn buttons ---------- */
+
+/* The artwork is the button, so all the chrome comes off. Same manners as the
+   drawn "press space" prompts: breathes to draw the eye, then holds steady and
+   swells under the pointer. Qualified with `button` so it outranks the panel
+   and dialog button styling above; sizing is left to the per-button rules. */
+button.btn-drawn {
+  display: inline-block;
+  vertical-align: middle;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  line-height: 0;
+  cursor: pointer;
+  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.55));
+  animation: hint-breathe 3.2s ease-in-out infinite;
+  opacity: 1;
+  /* `scale` rather than `transform`, which gsap owns on some of these screens */
+  scale: 1;
+  transition: scale 0.18s ease-out, filter 0.18s ease-out, opacity 0.18s ease-out;
+}
+
+button.btn-drawn:hover,
+button.btn-drawn:focus-visible {
+  animation: none;
+  opacity: 1;
+  scale: 1.07;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.6));
+}
+
+/* nothing to invite while it can't be pressed */
+button.btn-drawn:disabled {
+  animation: none;
+  opacity: 0.4;
+  scale: 1;
+  cursor: default;
+}
+
+.btn-drawn__art {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+}
+
+button.btn-drawn--start {
+  width: min(17rem, 62vw);
+}
+
+/* smaller inside the dialog card, where it's a confirm rather than the CTA.
+   The card centres its text, which carries the inline-block button along. */
+.name-prompt-card button.btn-drawn--start {
+  width: min(13rem, 60%);
+}
+
+button.btn-drawn--play-again {
+  width: min(12rem, 46vw);
+}
+
+/* skip sits in the corner and shouldn't be begging for attention, so it holds
+   steady instead of breathing -- it still swells under the pointer */
+button.btn-drawn--skip {
+  width: 5.5rem;
+  animation: none;
+  opacity: 0.75;
+}
+
+button.btn-drawn--skip:hover,
+button.btn-drawn--skip:focus-visible {
+  opacity: 1;
+}
+
 @media (max-width: 1100px) {
   .scene__church {
     height: 56vh;
@@ -896,6 +956,11 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .intro__hint {
+    animation: none;
+    opacity: 0.9;
+  }
+
+  button.btn-drawn {
     animation: none;
     opacity: 0.9;
   }

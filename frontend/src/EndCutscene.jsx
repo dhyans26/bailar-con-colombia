@@ -1,11 +1,15 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import gsap from 'gsap'
 import {
+  BUTTON_ART,
+  DEFAULT_HINT,
+  DEFAULT_HINT_IMAGE,
   LICENSE_DIALOGUE_FAIL,
   LICENSE_DIALOGUE_PASS,
   LICENSE_IMAGE,
   LICENSE_SCORE_THRESHOLD,
 } from './story.js'
+import DrawnButton from './DrawnButton.jsx'
 
 // story.js to update the lines
 
@@ -189,25 +193,29 @@ function EndCutscene({ passed, score, maxScore, onComplete, onSpeakerChange }) {
         {showLicense && (
           <img className="cutscene__license" src={LICENSE_IMAGE} alt="Salsa license" />
         )}
-        <p className="cutscene__hint">
-          {isLast
-            ? passed
-              ? 'space to claim your license'
-              : 'space to continue'
-            : 'space to continue'}
-        </p>
+        {/* the drawn prompt, except on the license beat, which asks for
+            something other than the plain "space to continue" */}
+        {isLast && passed ? (
+          <p className="cutscene__hint">space to claim your license</p>
+        ) : (
+          <img
+            className="cutscene__hint cutscene__hint--drawn"
+            src={DEFAULT_HINT_IMAGE}
+            alt={DEFAULT_HINT}
+            draggable="false"
+          />
+        )}
       </div>
 
-      <button
-        className="cutscene__skip"
-        type="button"
+      <DrawnButton
+        className="cutscene__skip btn-drawn--skip"
+        src={BUTTON_ART.skip}
+        label="skip · esc"
         onClick={(e) => {
           e.stopPropagation()
           finish()
         }}
-      >
-        skip · esc
-      </button>
+      />
     </div>
   )
 }
