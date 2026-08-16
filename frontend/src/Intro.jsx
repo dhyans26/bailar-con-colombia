@@ -206,7 +206,6 @@ function Intro({ onComplete, muted = false }) {
       {/* palms flank the church so the sides of the title card aren't bare sky */}
       <div className="scene__palms">
         <img className="scene__palm scene__palm--edge-left" src="/tree_coconut.png" alt="" />
-        <img className="scene__palm scene__palm--near-left" src="/tree.png" alt="" />
         <img className="scene__palm scene__palm--near-right" src="/tree_coconut.png" alt="" />
         <img className="scene__palm scene__palm--edge-right" src="/tree.png" alt="" />
       </div>
