@@ -48,9 +48,10 @@ export const DEFAULT_HINT_IMAGE_BG = publicAsset('/button_space_cont_bg.png')
 
 // the drawn button artwork -- see DrawnButton.jsx
 export const BUTTON_ART = {
-  start: '/button_start.png',
-  skip: '/button_skip.png',
-  playAgain: '/button_play-again.png',
+  start: publicAsset('/button_start.png'),
+  skip: publicAsset('/button_skip.png'),
+  playAgain: publicAsset('/button_play-again.png'),
+  home: publicAsset('/button_home.png'),
 }
 
 // The climb clips try to play with sound

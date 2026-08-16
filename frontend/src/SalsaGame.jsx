@@ -407,7 +407,12 @@ function SalsaGame({
               label="play again"
               onClick={startGame}
             />
-            <button onClick={onReturnToMenu}>return to main menu</button>
+            <DrawnButton
+              className="btn-drawn--home"
+              src={BUTTON_ART.home}
+              label="return to main menu"
+              onClick={onReturnToMenu}
+            />
           </div>
         </div>
       )}

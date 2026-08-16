@@ -1007,6 +1007,13 @@ button.btn-drawn--play-again {
   width: min(12rem, 46vw);
 }
 
+/* sits shoulder to shoulder with play again in .finished-actions. The two
+   drawings have different aspect ratios (1.65 here against 2.49 there), so the
+   width is picked to land them on the same height rather than the same width */
+button.btn-drawn--home {
+  width: min(8rem, 31vw);
+}
+
 /* skip sits in the corner and shouldn't be begging for attention, so it holds
    steady instead of breathing -- it still swells under the pointer */
 button.btn-drawn--skip {
