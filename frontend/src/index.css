@@ -669,6 +669,256 @@ body {
   color: var(--card-ink);
 }
 
+/* the "here's what each move looks like" popup shown after the name prompt,
+   right before startGame() actually kicks off round 1 */
+.tutorial-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(4, 12, 24, 0.55);
+  backdrop-filter: blur(3px);
+  cursor: default;
+}
+
+.tutorial-card {
+  width: min(52rem, 94vw);
+  padding: 2.25rem 2.5rem;
+  text-align: center;
+}
+
+.tutorial__title {
+  margin: 0 0 0.35rem;
+  font-size: 1.7rem;
+}
+
+.tutorial__subtitle {
+  margin: 0 0 1.25rem;
+  font-size: 0.9rem;
+  opacity: 0.75;
+}
+
+/* the three moves side by side, each running its own loop at once instead of
+   cycling through one at a time -- reflows to fewer columns if the window's
+   too narrow for all three */
+.tutorial__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 1rem 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.tutorial__move {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* perspective lives on the stage so translateZ on the figure inside it
+   actually reads as depth instead of just a flat scale */
+.tutorial__stage {
+  position: relative;
+  height: 8.5rem;
+  width: 100%;
+  margin: 0 auto 0.5rem;
+  perspective: 700px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tutorial__figure {
+  width: 7.5rem;
+  transform-style: preserve-3d;
+  will-change: transform, filter;
+}
+
+.tutorial__figure-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  user-select: none;
+}
+
+/* the four stick limbs (hands + feet), each swinging around its own anchor
+   point on the body -- see DanceTutorial.jsx for the anchor/rest geometry,
+   shared with the pose-driven rig in EmpanadaAvatar.jsx. transform-box: view-box
+   makes the inline transform-origin (set in px per limb) resolve in the same
+   viewBox user-unit space the anchor coordinates were written in, rather than
+   against each <g>'s own (off-center) bounding box */
+.tutorial__limb {
+  transform-box: view-box;
+  will-change: transform;
+}
+
+.tutorial__figure--front-back {
+  animation: tutorial-front-back 1.9s ease-in-out infinite;
+}
+
+@keyframes tutorial-front-back {
+  0%, 100% {
+    transform: translateZ(-70px) translateY(10px) scale(0.86);
+    filter: brightness(0.82);
+  }
+  50% {
+    transform: translateZ(90px) translateY(-14px) scale(1.18);
+    filter: brightness(1.12);
+  }
+}
+
+.tutorial__figure--side-step {
+  animation: tutorial-side-step 1.9s ease-in-out infinite;
+}
+
+@keyframes tutorial-side-step {
+  0%, 100% {
+    transform: translateX(-58px) translateZ(20px) translateY(-4px) rotate(-4deg);
+  }
+  25% {
+    transform: translateX(-58px) translateZ(46px) translateY(-16px) rotate(-6deg);
+  }
+  50% {
+    transform: translateX(0) translateZ(0) translateY(0) rotate(0deg);
+  }
+  75% {
+    transform: translateX(58px) translateZ(46px) translateY(-16px) rotate(6deg);
+  }
+}
+
+.tutorial__figure--spin {
+  animation: tutorial-spin 1.9s linear infinite;
+}
+
+@keyframes tutorial-spin {
+  0%, 100% {
+    transform: translateZ(0) rotateY(0deg) scale(1);
+    filter: brightness(1);
+  }
+  25% {
+    transform: translateZ(60px) rotateY(90deg) scale(1.08);
+    filter: brightness(1.18);
+  }
+  50% {
+    transform: translateZ(0) rotateY(180deg) scale(0.92);
+    filter: brightness(0.85);
+  }
+  75% {
+    transform: translateZ(60px) rotateY(270deg) scale(1.08);
+    filter: brightness(1.18);
+  }
+}
+
+/* ---- limb swings (hands + feet), one keyframe pair per limb type per move.
+   Left/right mirroring is done with a half-cycle animation-delay instead of a
+   second set of keyframes -- see the ".tutorial__limb--right" override below,
+   which has to come after these to win the cascade at equal specificity. */
+
+.tutorial__limb--arm.tutorial__limb--front-back {
+  animation: tutorial-limb-arm-front-back 1.9s ease-in-out infinite;
+}
+
+.tutorial__limb--leg.tutorial__limb--front-back {
+  animation: tutorial-limb-leg-front-back 1.9s ease-in-out infinite;
+}
+
+@keyframes tutorial-limb-arm-front-back {
+  0%, 100% { transform: rotate(-14deg); }
+  50% { transform: rotate(14deg); }
+}
+
+@keyframes tutorial-limb-leg-front-back {
+  0%, 100% { transform: rotate(-10deg); }
+  50% { transform: rotate(10deg); }
+}
+
+.tutorial__limb--arm.tutorial__limb--side-step {
+  animation: tutorial-limb-arm-side-step 1.9s ease-in-out infinite;
+}
+
+.tutorial__limb--leg.tutorial__limb--side-step {
+  animation: tutorial-limb-leg-side-step 1.9s ease-in-out infinite;
+}
+
+/* timed against the body's own tutorial-side-step keyframe (25%/75% are the
+   left/right extremes) -- legs kick the way the body leans, arms counter it */
+@keyframes tutorial-limb-arm-side-step {
+  0%, 100% { transform: rotate(10deg); }
+  25% { transform: rotate(20deg); }
+  50% { transform: rotate(-6deg); }
+  75% { transform: rotate(-20deg); }
+}
+
+@keyframes tutorial-limb-leg-side-step {
+  0%, 100% { transform: rotate(-10deg); }
+  25% { transform: rotate(-24deg); }
+  50% { transform: rotate(6deg); }
+  75% { transform: rotate(24deg); }
+}
+
+.tutorial__limb--arm.tutorial__limb--spin {
+  animation: tutorial-limb-arm-spin 1.9s linear infinite;
+}
+
+.tutorial__limb--leg.tutorial__limb--spin {
+  animation: tutorial-limb-leg-spin 1.9s linear infinite;
+}
+
+/* arms fling wide as the body spins; legs counter-rotate for a little
+   contrapposto twirl instead of just mirroring the arms exactly */
+@keyframes tutorial-limb-arm-spin {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.2); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes tutorial-limb-leg-spin {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(-180deg); }
+  100% { transform: rotate(-360deg); }
+}
+
+/* mirrors the right-side limbs by starting them half a cycle out of phase --
+   only for the two moves with a symmetric swing; a full spin doesn't need it */
+.tutorial__limb--right.tutorial__limb--front-back,
+.tutorial__limb--right.tutorial__limb--side-step {
+  animation-delay: -0.95s;
+}
+
+.tutorial__move-title {
+  margin: 0.1rem 0 0.2rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.tutorial__blurb {
+  margin: 0;
+  font-size: 0.8rem;
+  opacity: 0.85;
+  line-height: 1.35;
+}
+
+.tutorial-card button.btn-drawn--start {
+  width: min(13rem, 60%);
+}
+
+/* placement only -- the look comes from .btn-drawn */
+.tutorial__skip {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tutorial__figure,
+  .tutorial__shadow,
+  .tutorial__limb {
+    animation: none;
+  }
+}
+
 /* ---------- game ---------- */
 
 .stage {

@@ -87,4 +87,4 @@ export const LICENSE_DIALOGUE_FAIL = [
 ]
 
 // drop your license artwork in frontend/public/ at this path
-export const LICENSE_IMAGE = publicAsset('/salsa-license.png')
+export const LICENSE_IMAGE = publicAsset('/Card.png')

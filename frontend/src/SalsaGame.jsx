@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { supabase } from './supabaseClient.js'
 import EndCutscene from './EndCutscene.jsx'
+import DanceTutorial from './DanceTutorial.jsx'
 
 import DrawnButton from './DrawnButton.jsx'
 import { publicAsset } from './publicAsset.js'
@@ -130,6 +131,7 @@ function SalsaGame({
   const [submitState, setSubmitState] = useState('idle') // idle | saving | done | error
   const [liveProb, setLiveProb] = useState(0) // best confidence seen this round, mirrored for live rendering
   const [showNamePrompt, setShowNamePrompt] = useState(false)
+  const [showTutorial, setShowTutorial] = useState(false)
   const [cutsceneSeen, setCutsceneSeen] = useState(false)
   // 3-2-1-START! label shown only during round 1's ready phase; null the rest of the time.
   const [countdownLabel, setCountdownLabel] = useState(null)
@@ -154,19 +156,20 @@ function SalsaGame({
     setPhase('ready')
   }
 
-  // start game asks for a name first if one hasn't been captured yet
+  // start game asks for a name first if one hasn't been captured yet, then a
+  // quick tutorial popup previewing the moves before round 1 actually begins
   const handleStartClick = () => {
     if (!playerName.trim()) {
       setShowNamePrompt(true)
       return
     }
-    startGame()
+    setShowTutorial(true)
   }
 
   const submitName = () => {
     if (!playerName.trim()) return
     setShowNamePrompt(false)
-    startGame()
+    setShowTutorial(true)
   }
 
   // ready -> perform: round 1 gets a 3-2-1-start countdown
@@ -372,6 +375,16 @@ function SalsaGame({
             />
           </div>
         </div>
+      )}
+
+      {showTutorial && (
+        <DanceTutorial
+          moves={moves}
+          onDone={() => {
+            setShowTutorial(false)
+            startGame()
+          }}
+        />
       )}
 
       {(phase === 'ready' || phase === 'perform') && (
