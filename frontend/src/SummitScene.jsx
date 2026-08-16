@@ -1,4 +1,5 @@
 import EmpanadaAvatar from './EmpanadaAvatar.jsx'
+import PalmTree from './PalmTree.jsx'
 
 const EMPTY_POSE = { keypoints: [] } // senior emp needs ts otherwise he wont move broski
 
@@ -14,6 +15,14 @@ function SummitScene({ pose }) {
         />
       </svg>
 
+      {/* soft rolling meadow wash so the sky doesn't cut straight to the grass line */}
+      <svg className="scene__meadow" viewBox="0 0 1200 160" preserveAspectRatio="none">
+        <path
+          d="M0 160 L0 66 C110 40 190 78 310 58 C450 34 560 74 690 52 C840 28 970 66 1090 44 L1200 56 L1200 160 Z"
+          fill="currentColor"
+        />
+      </svg>
+
       <img className="scene__church" src="/church_monserrate.png" alt="" />
       <div className="scene__dancer">
         <EmpanadaAvatar pose={pose ?? EMPTY_POSE} />
@@ -21,6 +30,15 @@ function SummitScene({ pose }) {
       <div className="scene__haze" />
 
       <div className="scene__ground" />
+
+      {/* palms flank the church and dancer so the sides of the scene aren't bare sky */}
+      <div className="scene__palms">
+        <PalmTree className="scene__palm scene__palm--edge-left" />
+        <PalmTree className="scene__palm scene__palm--gap" />
+        <PalmTree className="scene__palm scene__palm--near-right" />
+        <PalmTree className="scene__palm scene__palm--edge-right" />
+      </div>
+
       <div className="scene__church-shadow" />
     </div>
   )

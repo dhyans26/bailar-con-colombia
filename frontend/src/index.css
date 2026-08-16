@@ -6,6 +6,10 @@
   --grass-dark: #3c4c1e;
   --ink: #f4efe6;
   --gold: #f2c14e;
+  --palm-frond: #4f8a34;
+  --palm-frond-dark: #2f5b22;
+  --palm-trunk: #a3794a;
+  --palm-trunk-dark: #7a5934;
   --font: 'Changa Variable', system-ui, sans-serif;
 
   color-scheme: dark;
@@ -58,6 +62,17 @@ body {
   height: 11vh;
   color: #4a6b8c;
   opacity: 0.45;
+  filter: blur(0.5px);
+}
+
+.scene__meadow {
+  position: absolute;
+  left: -2%;
+  width: 104%;
+  bottom: 6vh;
+  height: 9vh;
+  color: var(--grass-dark);
+  opacity: 0.55;
   filter: blur(0.5px);
 }
 
@@ -123,6 +138,84 @@ body {
   background-repeat: repeat-x;
   background-position: bottom center;
   background-size: auto 47vh;
+}
+
+/* ---------- palms ---------- */
+
+.scene__palms {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.scene__palm {
+  position: absolute;
+  width: auto;
+  overflow: visible;
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.3));
+}
+
+.palm-tree {
+  display: block;
+  height: 100%;
+  width: auto;
+}
+
+.palm-tree__trunk {
+  fill: var(--palm-trunk);
+  stroke: var(--palm-trunk-dark);
+  stroke-width: 2;
+}
+
+.palm-tree__frond {
+  fill: var(--palm-frond);
+}
+
+.palm-tree__frond--dark {
+  fill: var(--palm-frond-dark);
+}
+
+.palm-tree__coconut {
+  fill: var(--palm-trunk-dark);
+}
+
+/* far edges, biggest -- frame the scene like foreground foliage */
+.scene__palm--edge-left {
+  left: -1%;
+  bottom: 4vh;
+  height: 54vh;
+  transform: scaleX(-1) rotate(3deg);
+}
+
+.scene__palm--edge-right {
+  right: -2%;
+  bottom: 3vh;
+  height: 58vh;
+  transform: rotate(-3deg);
+}
+
+/* a little further in, smaller -- reads as set back from the edge trees */
+.scene__palm--near-left {
+  left: 9%;
+  bottom: 6vh;
+  height: 32vh;
+  transform: scaleX(-1) rotate(-2deg);
+}
+
+.scene__palm--near-right {
+  right: 9%;
+  bottom: 5vh;
+  height: 40vh;
+  transform: rotate(4deg);
+}
+
+/* fills the gap between the church and the dancer in SummitScene */
+.scene__palm--gap {
+  left: 55%;
+  bottom: 7vh;
+  height: 24vh;
+  opacity: 0.92;
+  transform: rotate(-2deg);
 }
 
 /* ---------- intro ---------- */
@@ -575,6 +668,21 @@ body {
 
   .scene__dancer {
     display: none;
+  }
+
+  /* narrow screens have no room to spare for a mid-scene palm */
+  .scene__palm--gap {
+    display: none;
+  }
+
+  .scene__palm--edge-left,
+  .scene__palm--edge-right {
+    height: 38vh;
+  }
+
+  .scene__palm--near-left,
+  .scene__palm--near-right {
+    height: 24vh;
   }
 }
 

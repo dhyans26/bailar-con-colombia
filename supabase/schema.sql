@@ -35,11 +35,8 @@ create policy "public can read leaderboard"
   to anon
   using (true);
 
--- Inserts go through submit_score() so only the best score per player is
--- kept, so the plain insert policy is removed.
 drop policy if exists "public can submit a score" on salsa_leaderboard;
 
--- Atomic "keep the highest score per name" upsert.
 create or replace function submit_score(
   p_player_name text,
   p_score integer,
