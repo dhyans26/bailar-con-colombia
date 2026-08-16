@@ -47,7 +47,7 @@ body {
 .scene__sky {
   position: absolute;
   inset: 0;
-  background: url('/sky.jpg') center / cover no-repeat var(--sky-high);
+  background: url('../sky.jpg') center / cover no-repeat var(--sky-high);
 }
 
 .scene__range {
@@ -163,7 +163,7 @@ body {
   right: 0;
   bottom: 0;
   height: 13vh;
-  background-image: url('/grass.png');
+  background-image: url('../grass.png');
   background-repeat: repeat-x;
   background-position: bottom center;
   background-size: auto 47vh;
@@ -231,7 +231,7 @@ body {
 .intro__sky {
   position: absolute;
   inset: 0;
-  background: url('/sky.jpg') center / cover no-repeat var(--sky-high);
+  background: url('../sky.jpg') center / cover no-repeat var(--sky-high);
 }
 
 .intro__title-card {

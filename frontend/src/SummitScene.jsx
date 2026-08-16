@@ -1,4 +1,5 @@
 import EmpanadaAvatar from './EmpanadaAvatar.jsx'
+import { publicAsset } from './publicAsset.js'
 
 const EMPTY_POSE = { keypoints: [] } // senior emp needs ts otherwise he wont move broski
 
@@ -22,18 +23,18 @@ function SummitScene({ pose, speaker }) {
         />
       </svg>
 
-      <img className="scene__church" src="/church_monserrate.png" alt="" />
+      <img className="scene__church" src={publicAsset('/church_monserrate.png')} alt="" />
       <img
         className={`scene__capybara${speaker === 'cabi' ? ' scene__capybara--talking' : ''}`}
-        src="/sra-capybara-con-dress.png"
+        src={publicAsset('/sra-capybara-con-dress.png')}
         alt=""
       />
 
       {/* palms flank the church and dancer so the sides of the scene aren't bare sky;
           drawn before the dancer so the empanada reads as in front of the trees */}
       <div className="scene__palms">
-        <img className="scene__palm scene__palm--edge-left" src="/tree_coconut.png" alt="" />
-        <img className="scene__palm scene__palm--edge-right" src="/tree.png" alt="" />
+        <img className="scene__palm scene__palm--edge-left" src={publicAsset('/tree_coconut.png')} alt="" />
+        <img className="scene__palm scene__palm--edge-right" src={publicAsset('/tree.png')} alt="" />
       </div>
 
       <div className={`scene__dancer${speaker === 'empanada' ? ' scene__dancer--talking' : ''}`}>

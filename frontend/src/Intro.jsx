@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import gsap from 'gsap'
 import Leaderboard from './Leaderboard.jsx'
 import { BEATS, CLIMB_AUDIO, DEFAULT_HINT, TITLE } from './story.js'
+import { publicAsset } from './publicAsset.js'
 
 // story.js to update the lore
 
@@ -197,7 +198,7 @@ function Intro({ onComplete, muted = false }) {
         />
         <img
           className="intro__capybara"
-          src="/sra-capybara-con-dress.png"
+          src={publicAsset('/sra-capybara-con-dress.png')}
           alt=""
           draggable="false"
         />
@@ -205,9 +206,9 @@ function Intro({ onComplete, muted = false }) {
 
       {/* palms flank the church so the sides of the title card aren't bare sky */}
       <div className="scene__palms">
-        <img className="scene__palm scene__palm--edge-left" src="/tree_coconut.png" alt="" />
-        <img className="scene__palm scene__palm--near-right" src="/tree_coconut.png" alt="" />
-        <img className="scene__palm scene__palm--edge-right" src="/tree.png" alt="" />
+        <img className="scene__palm scene__palm--edge-left" src={publicAsset('/tree_coconut.png')} alt="" />
+        <img className="scene__palm scene__palm--near-right" src={publicAsset('/tree_coconut.png')} alt="" />
+        <img className="scene__palm scene__palm--edge-right" src={publicAsset('/tree.png')} alt="" />
       </div>
 
       {onTitle && (

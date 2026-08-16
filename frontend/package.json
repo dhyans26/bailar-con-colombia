@@ -13,13 +13,15 @@
     "electron:dev": "concurrently -k -n VITE,ELECTRON -c blue,magenta \"vite\" \"wait-on tcp:5173 && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\"",
     "electron:build": "vite build && electron .",
     "backend:build": "bash ../backend/build_standalone.sh",
-    "dist:mac": "npm run build && npm run backend:build && electron-builder --mac"
+    "dist:mac": "npm run build && npm run backend:build && electron-builder --mac",
+    "dist:mac:fast": "npm run build && electron-builder --mac"
   },
   "build": {
     "appId": "com.macondo.app",
     "directories": {
       "output": "release"
     },
+    "afterSign": "electron/afterSign.js",
     "files": [
       "dist/**",
       "electron/**"

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { supabase } from './supabaseClient.js'
 import EndCutscene from './EndCutscene.jsx'
 import { LICENSE_SCORE_THRESHOLD } from './story.js'
+import { publicAsset } from './publicAsset.js'
 
 const ROUNDS_PER_GAME = 5
 const READY_MS = 2000
@@ -13,8 +14,8 @@ const COUNTDOWN_STEPS = ['3', '2', '1', 'START!']
 const COUNTDOWN_STEP_MS = 700
 
 const GAME_MUSIC_TRACKS = [
-  encodeURI('/game-music/La Vida Es Un Carnaval - Celia Cruz [0nBFWzpWXuM].opus'),
-  encodeURI('/game-music/markanthony.mp3'),
+  encodeURI(publicAsset('/game-music/La Vida Es Un Carnaval - Celia Cruz [0nBFWzpWXuM].opus')),
+  encodeURI(publicAsset('/game-music/markanthony.mp3')),
 ]
 
 const GAME_MUSIC_VOLUME = 0.55

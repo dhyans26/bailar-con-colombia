@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { publicAsset } from './publicAsset.js'
 
 // stick limbs anchored at the orange dots marked on the artwork
 // each limb is 2 segments: shoulder->elbow->wrist for arms, hip->knee->ankle for legs
@@ -130,7 +131,7 @@ function EmpanadaAvatar({ pose }) {
         </linearGradient>
       </defs>
       <g transform={`translate(${shiftX.toFixed(1)}, 0)`}>
-        <image href="/emp-cutout.png" x="0" y="0" width={IMAGE_WIDTH} height={IMAGE_HEIGHT} />
+        <image href={publicAsset('/emp-cutout.png')} x="0" y="0" width={IMAGE_WIDTH} height={IMAGE_HEIGHT} />
         {limbs.map((limb) => {
           const pts = limb.points.map((p) => `${p.x},${p.y}`).join(' ')
           return (
