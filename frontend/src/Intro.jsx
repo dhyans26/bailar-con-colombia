@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import Leaderboard from './Leaderboard.jsx'
+import PalmTree from './PalmTree.jsx'
 import { BEATS, CLIMB_AUDIO, DEFAULT_HINT, TITLE } from './story.js'
 
 // story.js to update the lore
@@ -177,8 +178,26 @@ function Intro({ onComplete, muted = false }) {
     <div className="intro" ref={rootRef} onClick={advance}>
       <div className="intro__sky" />
 
+      {/* soft rolling meadow wash so the sky doesn't cut straight to the grass line */}
+      <svg className="scene__meadow" viewBox="0 0 1200 160" preserveAspectRatio="none">
+        <path
+          d="M0 160 L0 66 C110 40 190 78 310 58 C450 34 560 74 690 52 C840 28 970 66 1090 44 L1200 56 L1200 160 Z"
+          fill="currentColor"
+        />
+      </svg>
+
+      <div className="scene__ground" />
+
       <div className="intro__title-card">
         <img src={TITLE.image} alt="" ref={titleRef} draggable="false" />
+      </div>
+
+      {/* palms flank the church so the sides of the title card aren't bare sky */}
+      <div className="scene__palms">
+        <PalmTree className="scene__palm scene__palm--edge-left" />
+        <PalmTree className="scene__palm scene__palm--near-left" />
+        <PalmTree className="scene__palm scene__palm--near-right" />
+        <PalmTree className="scene__palm scene__palm--edge-right" />
       </div>
 
       {onTitle && (
