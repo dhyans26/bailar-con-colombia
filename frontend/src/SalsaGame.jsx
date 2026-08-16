@@ -5,7 +5,7 @@ import { supabase } from './supabaseClient.js'
 
 const ROUNDS_PER_GAME = 5
 const READY_MS = 2000
-const PERFORM_MS = 4000
+const PERFORM_MS = 2000
 
 // One entry per track in public/game-music -- each game starts with a random
 // pick, so dropping a new song in the folder means adding it to this list too.
@@ -100,7 +100,16 @@ function DanceCallout({ phase, round, target, poseDetected, liveScore, maxScore 
   )
 }
 
-function SalsaGame({ pose, prediction, health, playerName, onGameActiveChange, onReturnToMenu, muted = false }) {
+function SalsaGame({
+  pose,
+  prediction,
+  health,
+  playerName,
+  onPlayerNameChange,
+  onGameActiveChange,
+  onReturnToMenu,
+  muted = false,
+}) {
   const [phase, setPhase] = useState('lobby') // lobby | ready | perform | finished
   const [round, setRound] = useState(0)
   const [target, setTarget] = useState(null)
@@ -110,6 +119,8 @@ function SalsaGame({ pose, prediction, health, playerName, onGameActiveChange, o
   // the game include the score that was just submitted.
   const [boardRefresh, setBoardRefresh] = useState(0)
   const [liveProb, setLiveProb] = useState(0) // best confidence seen this round, mirrored for live rendering
+  // The name prompt shown when Start Game is clicked with no name captured yet.
+  const [showNamePrompt, setShowNamePrompt] = useState(false)
   const maxProbRef = useRef(0)
   const submittedRef = useRef(false)
   const musicRef = useRef(null)
@@ -131,6 +142,23 @@ function SalsaGame({ pose, prediction, health, playerName, onGameActiveChange, o
     setTarget(pickTarget(moves, null))
     trackRef.current = pickTrack()
     setPhase('ready')
+  }
+
+  // Start Game asks for a name first if one hasn't been captured yet -- the
+  // score submitted at the end of the game needs it, so get it up front
+  // rather than silently dropping the score on the leaderboard.
+  const handleStartClick = () => {
+    if (!playerName.trim()) {
+      setShowNamePrompt(true)
+      return
+    }
+    startGame()
+  }
+
+  const submitName = () => {
+    if (!playerName.trim()) return
+    setShowNamePrompt(false)
+    startGame()
   }
 
   // ready -> perform after a countdown
@@ -275,7 +303,37 @@ function SalsaGame({ pose, prediction, health, playerName, onGameActiveChange, o
             {ROUNDS_PER_GAME} rounds. Each round calls out a move -- nail it before time's up to
             score points.
           </p>
-          <button onClick={startGame}>Start Game</button>
+          <button onClick={handleStartClick}>Start Game</button>
+        </div>
+      )}
+
+      {/* Clicks anywhere on the backdrop stop here -- outside the card is not
+          a way to dismiss the prompt and start the game. */}
+      {showNamePrompt && (
+        <div className="name-prompt-overlay" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="name-prompt-card"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="game-name-heading"
+          >
+            <h2 id="game-name-heading">What's your name?</h2>
+            <p>This name will be on the leaderboard.</p>
+            <input
+              type="text"
+              placeholder="e.g. Juan"
+              value={playerName}
+              maxLength={40}
+              autoFocus
+              onChange={(e) => onPlayerNameChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') submitName()
+              }}
+            />
+            <button type="button" onClick={submitName} disabled={!playerName.trim()}>
+              Start Game
+            </button>
+          </div>
         </div>
       )}
 

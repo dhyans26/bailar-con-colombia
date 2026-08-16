@@ -12,13 +12,11 @@ import { BEATS, CLIMB_AUDIO, DEFAULT_HINT, TITLE } from './story.js'
 
 const TITLE_INDEX = -1
 
-function Intro({ playerName, onPlayerNameChange, onComplete, muted = false }) {
+function Intro({ onComplete, muted = false }) {
   // -1 is the title card, 0..n-1 index into BEATS.
   const [index, setIndex] = useState(TITLE_INDEX)
   // Text only appears once the clip for this beat has finished.
   const [showText, setShowText] = useState(true)
-  // The name prompt shown when the player starts from the title card.
-  const [showNamePrompt, setShowNamePrompt] = useState(false)
 
   const rootRef = useRef(null)
   const titleRef = useRef(null)
@@ -28,7 +26,6 @@ function Intro({ playerName, onPlayerNameChange, onComplete, muted = false }) {
 
   const indexRef = useRef(TITLE_INDEX)
   const showTextRef = useRef(true)
-  const showNamePromptRef = useRef(false)
   const mutedRef = useRef(muted)
   const doneRef = useRef(false)
   const busyRef = useRef(false)
@@ -152,9 +149,8 @@ function Intro({ playerName, onPlayerNameChange, onComplete, muted = false }) {
 
   const advance = useCallback(() => {
     // busy = a clip is crossfading in, so a fast double-tap cannot blow
-    // straight through the clip that just started. The name prompt is modal:
-    // nothing moves until it is submitted.
-    if (doneRef.current || busyRef.current || showNamePromptRef.current) return
+    // straight through the clip that just started.
+    if (doneRef.current || busyRef.current) return
 
     // Mid-clip: jump to the end rather than making the player wait it out.
     if (!showTextRef.current) {
@@ -173,35 +169,11 @@ function Intro({ playerName, onPlayerNameChange, onComplete, muted = false }) {
       finish()
       return
     }
-    // Leaving the title card is the "start" moment -- capture the player's
-    // name for the leaderboard before the climb kicks off.
-    if (next === 0 && !playerName.trim()) {
-      showNamePromptRef.current = true
-      setShowNamePrompt(true)
-      return
-    }
     playBeat(next)
-  }, [finish, playBeat, playerName])
-
-  // Confirm the name prompt and let the climb start from the title card.
-  const submitName = useCallback(() => {
-    if (!showNamePromptRef.current || !playerName.trim()) return
-    showNamePromptRef.current = false
-    setShowNamePrompt(false)
-    playBeat(0)
-  }, [playerName, playBeat])
+  }, [finish, playBeat])
 
   useEffect(() => {
     const onKey = (e) => {
-      // While the name prompt is up, Enter submits it; everything else is
-      // ignored so typing (including spaces) is not eaten by the intro.
-      if (showNamePromptRef.current) {
-        if (e.key === 'Enter') {
-          e.preventDefault()
-          submitName()
-        }
-        return
-      }
       if (e.code === 'Space' || e.key === ' ') {
         e.preventDefault()
         advance()
@@ -212,7 +184,7 @@ function Intro({ playerName, onPlayerNameChange, onComplete, muted = false }) {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [advance, finish, submitName])
+  }, [advance, finish])
 
   const beat = index >= 0 ? BEATS[index] : null
   const onTitle = index === TITLE_INDEX
@@ -253,33 +225,6 @@ function Intro({ playerName, onPlayerNameChange, onComplete, muted = false }) {
 
       <div className="intro__vignette" />
       <div className="intro__flash" ref={flashRef} />
-
-      {/* Clicks anywhere on the backdrop stop here — outside the card is not
-          a way to dismiss the prompt and start the climb. */}
-      {showNamePrompt && (
-        <div className="intro__name-overlay" onClick={(e) => e.stopPropagation()}>
-          <div
-            className="intro__name-card"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="intro-name-heading"
-          >
-            <h2 id="intro-name-heading">What's your name?</h2>
-            <p>This name will be on the leaderboard.</p>
-            <input
-              type="text"
-              placeholder="e.g. Juan"
-              value={playerName}
-              maxLength={40}
-              autoFocus
-              onChange={(e) => onPlayerNameChange(e.target.value)}
-            />
-            <button type="button" onClick={submitName} disabled={!playerName.trim()}>
-              start climbing
-            </button>
-          </div>
-        </div>
-      )}
 
       {showText && (
         <div
