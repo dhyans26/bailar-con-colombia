@@ -305,44 +305,106 @@ body {
   );
 }
 
-/* the leaderboard panel on the title card. */
+/* where the drawn leaderboard hangs on the title card. Sized by height so it
+   never outgrows the screen; the board's own aspect ratio sets the width. */
 .intro__leaderboard {
   position: absolute;
-  top: clamp(1.5rem, 6vh, 3.5rem);
-  right: clamp(1.5rem, 4vw, 3.5rem);
+  top: clamp(1rem, 4vh, 2.5rem);
+  right: clamp(1rem, 3vw, 3rem);
   width: fit-content;
-  max-width: min(24rem, 84vw);
-  max-height: 64vh;
-  overflow: auto;
-  padding: 1.4rem 1.5rem;
-  border: 1px solid rgba(244, 239, 230, 0.16);
-  border-radius: 14px;
-  background: rgba(8, 14, 22, 0.66);
-  backdrop-filter: blur(6px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
-  font-size: clamp(0.9rem, 1.4vw, 1.05rem);
+  height: min(74vh, 30rem);
   cursor: default;
   user-select: text;
+  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.4));
 }
 
-.intro__leaderboard h2 {
-  margin: 0 0 0.5rem;
-  font-size: clamp(1.1rem, 2vw, 1.4rem);
-}
+/* ---------- the drawn leaderboard ---------- */
 
-.intro__leaderboard p {
-  font-size: 0.9em;
-}
-
-.intro__leaderboard table {
-  border-collapse: collapse;
+/* The artwork is the panel: no chrome of our own, we just drop names and
+   scores into the two blank columns it rules off. Every offset below is a
+   percentage of the board, and text is sized in cqw, so the whole thing
+   scales as one picture. See Leaderboard.jsx for the measured slot heights. */
+.leaderboard {
+  container-type: inline-size;
+  position: relative;
+  height: 100%;
+  width: auto;
+  /* the board's painted edges, not the PNG's -- see .leaderboard__art */
+  aspect-ratio: 808 / 1319;
+  overflow: hidden;
+  color: #46270f; /* the brown the board is outlined in */
   font-variant-numeric: tabular-nums;
 }
 
-.intro__leaderboard th,
-.intro__leaderboard td {
-  padding: 0.3rem 0.6rem;
-  text-align: left;
+/* The PNG carries a wide transparent margin around the drawing. Blow it up and
+   pull it back so only the board itself fills the box (which is clipped to the
+   board's aspect ratio above): 2187/808 wide, offset by the margins 602 and 109. */
+.leaderboard__art {
+  position: absolute;
+  top: -8.264%;
+  left: -74.505%;
+  width: 270.668%;
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* the title is painted on the board, so ours is for screen readers only */
+.leaderboard__heading {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.leaderboard__slot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 10.4%; /* one ruled row */
+  transform: translateY(-50%); /* `top` is the numeral's centre line */
+  font-size: 7.2cqw;
+  line-height: 1;
+}
+
+.leaderboard__name,
+.leaderboard__score {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* between the two drawn column rules */
+.leaderboard__name {
+  left: 25.5%;
+  right: 30%;
+  text-overflow: ellipsis;
+}
+
+/* right of the second rule, short of the drawn border */
+.leaderboard__score {
+  left: 74%;
+  right: 7%;
+  text-align: center;
+}
+
+/* loading / error / empty, written across the blank slots */
+.leaderboard__status {
+  position: absolute;
+  left: 23.5%;
+  right: 7%;
+  top: 56.3%;
+  margin: 0;
+  transform: translateY(-50%);
+  text-align: center;
+  font-size: 5cqw;
+  line-height: 1.3;
 }
 
 .intro__copy {
